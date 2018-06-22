@@ -33,7 +33,6 @@ public class MovieService {
      * @param content 请求到的页面
      */
     public void parseMovie(String content,String url){
-        //TODO to do somethings
         logger.info("==========Parse Movie:" + url + "============");
         //parse movie detail page
         Pattern moviePattern = Pattern.compile(Constants.MOVIE_REGULAR_EXP);//初始化正则
