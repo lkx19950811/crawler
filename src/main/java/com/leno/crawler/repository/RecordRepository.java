@@ -2,6 +2,7 @@ package com.leno.crawler.repository;
 
 import com.leno.crawler.common.Repository;
 import com.leno.crawler.entity.Record;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public interface RecordRepository extends Repository<Record> {
     @Query("SELECT r.url from record r where r.crawled=?1")
     List<String> findUrlbyStatus(String status);
 
+    @Modifying
     @Query("update record r set r.crawled = '1' where r.url=?1")
     int setRecordONE(String url);
 }

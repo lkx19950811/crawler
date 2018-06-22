@@ -51,8 +51,8 @@ public class CrawlerSchedule {
         //获取代理
         HttpHost proxyHost =  proxyService.getProxyHost();
         for (String url : urls){
-            String content = HttpUtils.proxyGet(url,proxyHost);
-//            String content = HttpUtils.get(url);
+//            String content = HttpUtils.proxyGet(url,proxyHost);
+            String content = HttpUtils.get(url);
             recordService.parseUrl(content);
             movieService.parseMovie(content,url);
             commentService.parseComment(content,url);
