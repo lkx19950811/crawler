@@ -24,7 +24,14 @@ public class Record {
      * 是否被爬过
      */
     @Column(name = "crawled")
-    private String crawled;
+    private String crawled = "0";
+
+    public Record() {
+    }
+
+    public Record(String url) {
+        this.url = url;
+    }
 
     public Long getRecordId() {
         return recordId;
@@ -48,5 +55,14 @@ public class Record {
 
     public void setCrawled(String crawled) {
         this.crawled = crawled;
+    }
+
+    @Override
+    public String toString() {
+        return "Record{" +
+                "recordId=" + recordId +
+                ", url='" + url + '\'' +
+                ", crawled='" + crawled + '\'' +
+                '}';
     }
 }

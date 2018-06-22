@@ -3,9 +3,9 @@ package com.leno.crawler.repository;
 import com.leno.crawler.common.Repository;
 import com.leno.crawler.entity.Record;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author leon
@@ -13,7 +13,19 @@ import java.util.List;
  * @desc
  */
 public interface RecordRepository extends Repository<Record> {
+    /**
+     * 根据url查询记录
+     * @param url
+     * @return
+     */
     Record findByUrl(String url);
-    @Query("select r.url from Record r where r.crawled=:status")
-    List<String> findAllByCrawledIs(@Param("status") String status);
+
+    /**
+     *  hsql中表名要与 Entity中的table名对应,如果没有table名,则默认类名为表名(区分大小写)
+     * @param status
+     * @return
+     */
+    @Query("SELECT r.url from record r where r.crawled=?1")
+    List<String> findUrlbyStatus(String status);
+
 }

@@ -9,4 +9,5 @@ import com.leno.crawler.entity.Comments;
  * @desc
  */
 public interface CommentRepository extends Repository<Comments> {
+    Comments findByCommentInfo(String info);
 }

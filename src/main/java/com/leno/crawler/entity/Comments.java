@@ -34,7 +34,7 @@ public class Comments {
      * 评论者头像链接
      */
     @Column(name = "commentAuthorImgUrl")
-    private String commentAuthorUrl;
+    private String commentAuthorImgUrl;
     /**
      * 评论点赞数量
      */
@@ -74,12 +74,12 @@ public class Comments {
         this.commentAuthor = commentAuthor;
     }
 
-    public String getCommentAuthorUrl() {
-        return commentAuthorUrl;
+    public String getCommentAuthorImgUrl() {
+        return commentAuthorImgUrl;
     }
 
-    public void setCommentAuthorUrl(String commentAuthorUrl) {
-        this.commentAuthorUrl = commentAuthorUrl;
+    public void setCommentAuthorImgUrl(String commentAuthorImgUrl) {
+        this.commentAuthorImgUrl = commentAuthorImgUrl;
     }
 
     public String getCommentVote() {
@@ -105,5 +105,6 @@ public class Comments {
     public void setRecordId(String recordId) {
         this.recordId = recordId;
     }
+
 
 }
