@@ -56,6 +56,7 @@ public class CrawlerSchedule {
             recordService.parseUrl(content);
             movieService.parseMovie(content,url);
             commentService.parseComment(content,url);
+            recordService.setRecordONE(url);
         }
     }
 

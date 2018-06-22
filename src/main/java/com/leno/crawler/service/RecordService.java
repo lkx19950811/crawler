@@ -73,6 +73,14 @@ public class RecordService {
     }
 
     /**
+     * 将爬过的链接置为1
+     * @param url
+     */
+    public void setRecordONE(String url){
+        recordRepository.setRecordONE(url);
+    }
+
+    /**
      * 解析单个节点
      * @param nextLinkList
      * @param node
