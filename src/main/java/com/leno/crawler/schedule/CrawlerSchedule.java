@@ -45,7 +45,7 @@ public class CrawlerSchedule {
     @Value("${proxied}")
     private Boolean proxyied;
     ExecutorService fixedThreadPool = Executors.newFixedThreadPool(10);
-    @Scheduled(cron = "0/20 * * * * ?")
+    @Scheduled(cron = "0/5 * * * * ?")
 //    @Scheduled(fixedDelay = 500000000)
     public void CrawlerDouban() throws Exception {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>    开始爬取,代理设置:{}        <<<<<<<<<<<<<<<<<",proxyied);
@@ -55,9 +55,10 @@ public class CrawlerSchedule {
          */
         recordService.initURLDouban(seed,urls);
         for (String url : urls){
+            friendlyToDouban();//先停几秒
             //可更改是否使用代理
             final String page = isProt(url,proxyied);
-            if (StringUtils.isEmpty(page))return;
+            if (StringUtils.isEmpty(page))continue;
             Thread recordThread = new Thread(() -> {
                 recordService.parseUrl(page);
             });
@@ -71,7 +72,6 @@ public class CrawlerSchedule {
             fixedThreadPool.execute(movieThread);
             fixedThreadPool.execute(commentThread);
             recordService.setRecordONE(url);//将爬取过的标记为1
-            friendlyToDouban();//先停几秒
         }
     }
 
@@ -101,16 +101,18 @@ public class CrawlerSchedule {
     public String isProt (String url,Boolean proxied){
         if (proxied){
             String content = "";
-            Proxy proxy =  proxyService.getProxyHost();
-            HttpHost proxyHost = proxyToHttphost(proxy);
-            while (StringUtils.isEmpty(content)){//循环使用代理,失败则切换
+            boolean requestStatus = false;
+            while (!requestStatus){//循环使用代理,失败则切换
+                Proxy proxy =  proxyService.getProxyHost();
+                HttpHost proxyHost = proxyToHttphost(proxy);
                 try{
                     content = HttpUtils.proxyGet(url,proxyHost);
                 }catch (Exception e){
                     logger.error("代理失败,切换代理点");
                     proxyService.failProxy(proxy);//对失败的代理ip进行处理
-                    proxy = proxyService.getProxyHost();
-                    proxyHost = proxyToHttphost(proxy);
+                }
+                if (null!=content){//如果拿到了返回,则不继续请求
+                    requestStatus = true;
                 }
             }
             return content;

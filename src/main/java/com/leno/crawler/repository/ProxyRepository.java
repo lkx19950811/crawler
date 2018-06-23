@@ -9,4 +9,5 @@ import com.leno.crawler.entity.Proxy;
  * @desc
  */
 public interface ProxyRepository extends Repository<Proxy> {
+    Proxy findByIp(String ip);
 }

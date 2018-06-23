@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -85,7 +86,8 @@ public class MovieService {
             movie.setName(doc.getElementsByAttributeValue("property", "v:itemreviewed").text());
             movie.setRatingNum(doc.getElementsByAttributeValue("property", "v:average").text());
         }
-        if (null!=movie.getName()){
+        String movieName = movie.getName();
+        if (!StringUtils.isEmpty(movieName)){
             movieRepository.save(movie);
             logger.info(">>>>>>saving " + movie.getName() + "<<<<<<");
         }

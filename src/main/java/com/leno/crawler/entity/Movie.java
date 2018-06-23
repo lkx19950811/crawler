@@ -13,7 +13,6 @@ import javax.persistence.*;
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // MYSQL时可以这样使用自增
-    //@Column(name = "movieId")
     private Long movieId;
     /**
      * 电影名

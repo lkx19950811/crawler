@@ -64,12 +64,15 @@ public class DataUtils {
      */
     public static String transcoding(String str,String charset){
         try {
-            return new String(str.getBytes(getEncoding(str)),charset);
+            String encoding = getEncoding(str);
+            if (encoding.equalsIgnoreCase("gb2312")){
+                charset = encoding;
+            }
+            return new String(str.getBytes(encoding),charset);
         } catch (UnsupportedEncodingException e) {
             logger.info("转码失败");
-        }finally {
-            return str;
         }
+        return str;
     }
 
 }

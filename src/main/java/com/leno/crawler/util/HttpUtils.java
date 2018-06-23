@@ -52,14 +52,12 @@ public class HttpUtils {
             ResponseHandler<String> responseHandler = getResponseHandler();
             response = httpClient.execute(httpGet, responseHandler);
         } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             try {
                 httpClient.close();
             } catch (IOException e) {
-                e.printStackTrace();
             }
-            return DataUtils.transcoding(response, "utf-8");
+            return DataUtils.transcoding(response, "UTF-8");
         }
     }
 
@@ -86,7 +84,7 @@ public class HttpUtils {
                 e.printStackTrace();
             }
         }
-        return DataUtils.transcoding(response, "utf-8");
+        return DataUtils.transcoding(response, "UTF-8");
     }
     /**
      * 设置代理get请求
