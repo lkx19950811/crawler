@@ -28,6 +28,19 @@ public class Proxy {
      */
     private String type;
 
+    /**
+     * 尝试次数连接
+     */
+    private Integer tryNum;
+
+    public Integer getTryNum() {
+        return tryNum;
+    }
+
+    public void setTryNum(Integer tryNum) {
+        this.tryNum = tryNum;
+    }
+
     public Proxy() {
     }
 

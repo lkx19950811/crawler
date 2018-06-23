@@ -8,6 +8,8 @@ import org.htmlparser.Parser;
 import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 /**
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class RecordService {
+    Logger logger = LoggerFactory.getLogger(RecordService.class);
     @Autowired
     RecordRepository recordRepository;
     @Value("${maxLinkNum}")
@@ -36,24 +38,30 @@ public class RecordService {
      * 从返回的html中解析链接
      * @param content 传入返回的html
      */
-    public void parseUrl(String content) throws Exception {
+    public void parseUrl(String content)  {
         Long countNum = recordRepository.count();
-        Parser parser = new Parser(content);
-        HasAttributeFilter filter = new HasAttributeFilter("href");//提取页面中的链接
-        List<String> nextLinkList = new ArrayList<>();
-        if (countNum < maxCycle){//限制数据库中链接的数量
-            NodeList list = parser.parse(filter);
-            int count = list.size();
-            for (int i=0;i<count;i++){
-                Node node = list.elementAt(i);
-                parseLink(nextLinkList,node);
+        try {
+            Parser parser = new Parser(content);
+            HasAttributeFilter filter = new HasAttributeFilter("href");//提取页面中的链接
+            List<String> nextLinkList = new ArrayList<>();
+            if (countNum < maxCycle){//限制数据库中链接的数量
+                NodeList list = parser.parse(filter);
+                int count = list.size();
+                for (int i=0;i<count;i++){
+                    Node node = list.elementAt(i);
+                    parseLink(nextLinkList,node);
+                }
             }
-        }else if (nextLinkList.size()>0){//如果提取到链接,则存入数据库
-            List<Record> records = nextLinkList.stream().map(url->{
-                Record record = new Record(url);
-                return record;
-            }).collect(Collectors.toList());
-            recordRepository.saveAll(records);
+            if (nextLinkList.size()>0){//如果提取到链接,则存入数据库
+//                List<Record> records = nextLinkList.stream().map(url->{
+//                    Record record = new Record(url);
+//                    return record;
+//                }).collect(Collectors.toList());
+//                Integer result = recordRepository.saveAll(records).size();
+                logger.info(">>>>>>>>>>>>>存入{}条链接<<<<<<<<<<<<<",nextLinkList.size());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
     }
@@ -99,6 +107,7 @@ public class RecordService {
                     Matcher commentMatcher = commentPattern.matcher(nextLink);
                     if (movieMatcher.find() || commentMatcher.find()){//找到短评和电影链接,则存入list
                         nextLinkList.add(nextLink);
+                        recordRepository.save(new Record(nextLink));//如果循环存入list入库,可能会造成重复几率大大增加
                     }
                 }
             }
