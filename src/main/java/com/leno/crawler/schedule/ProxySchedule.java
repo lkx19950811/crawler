@@ -24,7 +24,9 @@ public class ProxySchedule {
     @Scheduled(initialDelay = 0, fixedDelay = 5000)//5秒
     public void parseProxy() throws ParseException, InterruptedException {
         friendlyToDouban();
-        this.page = Integer.valueOf(page) + 1 + "";
+        Integer p = Integer.valueOf(page);
+        if (p==10)this.page="0";
+        this.page = (p + 1 ) + "";
         proxyService.parseProxyUrl(page);
 
     }
