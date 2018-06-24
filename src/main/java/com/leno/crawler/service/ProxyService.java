@@ -3,6 +3,7 @@ package com.leno.crawler.service;
 import com.leno.crawler.entity.Proxy;
 import com.leno.crawler.repository.ProxyRepository;
 import com.leno.crawler.util.HttpUtils;
+import org.apache.http.HttpHost;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,7 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -29,7 +34,7 @@ public class ProxyService {
     @Autowired
     ProxyRepository proxyRepository;
 
-    /**
+    /**@deprecated
      * 随机获得代理地址
      * @return
      */
@@ -45,6 +50,24 @@ public class ProxyService {
     }
 
     /**
+     * 选择最近成功的地址
+     * @param proxy 上一次使用的地址
+     * @return
+     */
+    public Proxy getBestProxyHost(Proxy proxy){
+        if (proxy.getIp()==null){
+            proxy = proxyRepository.findAllByOrOrderByConDate().get(0);
+        }
+        List<Proxy> list = proxyRepository.findAllByIpNotInOrderByConDateDesc(proxy.getIp());
+        for (Proxy pr : list){
+            if (pr.getStatus().equals("可用")){
+                return pr;
+            }
+        }
+        return proxy;//是在没找到可用的代理,先凑合着用,毕竟用自己请求会被封
+    }
+
+    /**
      * 代理失败对Proxy进行失败记录
      * @param proxy
      */
@@ -52,28 +75,62 @@ public class ProxyService {
         if (proxy.getTryNum()>3){
             proxyRepository.delete(proxy);
         }else {
+            proxy.setStatus("不可用");
             proxy.setTryNum(proxy.getTryNum() +1);
             proxyRepository.save(proxy);
         }
     }
 
     /**
+     * 验证可用Proxy
+     */
+    public void verifyProxy() throws InterruptedException {
+        logger.info("验证代理状态");
+        List<Proxy> proxies = proxyRepository.findAll();
+        for (Proxy proxy:proxies){
+            friendlyToDouban();
+            HttpHost host = new HttpHost(proxy.getIp(),proxy.getPort(),proxy.getType());
+            String res = HttpUtils.proxyGet("https://www.baidu.com",host);
+            if (!StringUtils.isEmpty(res)){
+                proxy.setStatus("可用");
+                proxy.setConDate(new Date());
+                proxy = proxyRepository.save(proxy);
+            }else {
+                proxy.setStatus("不可用");
+                proxy = proxyRepository.save(proxy);
+            }
+            logger.info("验证代理状态{},{}",proxy.getStatus(),proxy.getIp());
+        }
+    }
+
+    /**
      * 抓取代理
      */
-    public void parseProxyUrl(){
-        String content = HttpUtils.get("http://www.xicidaili.com/wt/");
+    public void parseProxyUrl(String page) throws ParseException {
+        logger.info(">>>>>>>>>>>>>> 抓代理  <<<<<<<<<<<<<");
+        String content = HttpUtils.get("http://www.xicidaili.com/wt/" + page);
         Document document = Jsoup.parse(content);
         Elements elements = document.getElementById("ip_list").getElementsByTag("tbody");
         if (elements.size()==1){
             Elements trs = elements.get(0).children();
             for (Element tr : trs){
                 Proxy proxy = new Proxy();
-                if (tr.toString().contains("国家")){
+                if (tr.toString().contains("国家")){//说明不是ip列表
                     continue;
                 }else {
+                    String secReg = ".*(\\d+\\.\\d+).*";
+                    Pattern r = Pattern.compile(secReg);
+                    Matcher m = r.matcher(tr.children().get(6).toString());
+                    if (m.find()){
+                        Double sec = Double.valueOf(m.group(1));
+                        if (sec>1.0)continue;
+                    }
+                    if (!tr.child(4).text().equals("高匿")){
+                        continue;
+                    }
                     String ipReg = "^(\\d+\\.\\d+\\.\\d+\\.\\d+).*";
-                    Pattern r = Pattern.compile(ipReg);
-                    Matcher m = r.matcher(tr.text());
+                    r = Pattern.compile(ipReg);
+                    m = r.matcher(tr.text());
                     if (m.find()){
                         String ip = m.group(1);
                         Optional optional = Optional.ofNullable(proxyRepository.findByIp(ip));
@@ -91,22 +148,21 @@ public class ProxyService {
                         proxy.setPort(Integer.valueOf(port));
                     }
                     proxy.setType("http");
-                    proxy.setTryNum(0);
-                    String secReg = ".*(\\d+\\.\\d+).*";
-                    r = Pattern.compile(secReg);
-                    m = r.matcher(tr.children().get(6).toString());
-                    if (m.find()){
-                        Double sec = Double.valueOf(m.group(1));
-                        if (sec>1.0)continue;
-                    }
-                    if (!tr.child(4).text().equals("高匿")){
-                        continue;
-                    }
+
+                    SimpleDateFormat format = new SimpleDateFormat("yy-MM-dd mm:ss");
+                    String str = tr.child(9).text();
+                    proxy.setConDate(format.parse(str));
                     proxyRepository.save(proxy);
                     logger.info("Saving >>>>>>>>>>>>>>>> {}:{}",proxy.getIp(),proxy.getPort());
                 }
             }
         }
     }
-
+    /**
+     * 随机停止1到10秒
+     * @throws InterruptedException
+     */
+    private static void friendlyToDouban() throws InterruptedException {
+        Thread.sleep((new Random().nextInt(10) + 1)*1000);//sleep for the random second so that avoiding to be listed into blacklist
+    }
 }

@@ -1,6 +1,10 @@
 package com.leno.crawler.entity;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import java.util.Date;
 
 /**
  * @author leon
@@ -31,7 +35,31 @@ public class Proxy {
     /**
      * 尝试次数连接
      */
-    private Integer tryNum;
+    private Integer tryNum = 0;
+    /**
+     * 最后验证时间
+     */
+    private Date conDate;
+    /**
+     * 代理状态
+     */
+    private String status = "可用";
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Date getConDate() {
+        return conDate;
+    }
+
+    public void setConDate(Date conDate) {
+        this.conDate = conDate;
+    }
 
     public Integer getTryNum() {
         return tryNum;

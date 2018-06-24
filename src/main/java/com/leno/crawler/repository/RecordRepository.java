@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author leon
@@ -19,7 +18,7 @@ public interface RecordRepository extends Repository<Record> {
      * @param url
      * @return
      */
-    Record findByUrl(String url);
+    List<Record> findByUrl(String url);
 
     /**
      *  hsql中表名要与 Entity中的table名对应,如果没有table名,则默认类名为表名(区分大小写)

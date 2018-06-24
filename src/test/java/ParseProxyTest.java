@@ -1,6 +1,7 @@
 import com.leno.crawler.service.ProxyService;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,9 +13,9 @@ import java.util.regex.Pattern;
  */
 public class ParseProxyTest {
     @Test
-    public void testParse(){
+    public void testParse() throws ParseException {
         ProxyService proxyService = new ProxyService();
-        proxyService.parseProxyUrl();
+        proxyService.parseProxyUrl("");
     }
     @Test
     public void testPattern(){

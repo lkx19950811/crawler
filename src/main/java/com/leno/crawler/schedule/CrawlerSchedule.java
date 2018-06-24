@@ -45,8 +45,9 @@ public class CrawlerSchedule {
     @Value("${proxied}")
     private Boolean proxyied;
     ExecutorService fixedThreadPool = Executors.newFixedThreadPool(100);
+    Proxy proxy = new Proxy();
 //    @Scheduled(cron = "0/1 * * * * ?")
-    @Scheduled(initialDelay = 0,fixedRate = 20000)
+    @Scheduled(initialDelay = 10000,fixedRate = 20000)
     public void CrawlerDouban() throws Exception {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>    开始爬取,代理设置:{}        <<<<<<<<<<<<<<<<<",proxyied);
         List<String> urls = new ArrayList<>();
@@ -55,7 +56,7 @@ public class CrawlerSchedule {
          */
         recordService.initURLDouban(seed,urls);
         for (String url : urls){
-//            friendlyToDouban();//先停几秒
+            friendlyToDouban();//先停几秒
             //可更改是否使用代理
             final String page = isProt(url,proxyied);
             if (StringUtils.isEmpty(page))continue;
@@ -98,12 +99,14 @@ public class CrawlerSchedule {
      * @param proxied
      * @return
      */
-    public String isProt (String url,Boolean proxied){
+    public String isProt (String url,Boolean proxied) throws InterruptedException {
         if (proxied){
             String content = "";
             boolean requestStatus = false;
             while (!requestStatus){//循环使用代理,失败则切换
-                Proxy proxy =  proxyService.getProxyHost();
+                if (proxy.getIp()==null)//当前使用的代理未指定,先获取代理
+                proxy =  proxyService.getBestProxyHost(proxy);
+
                 HttpHost proxyHost = proxyToHttphost(proxy);
                 try{
                     content = HttpUtils.proxyGet(url,proxyHost);
@@ -111,8 +114,14 @@ public class CrawlerSchedule {
                     logger.error("代理失败,切换代理点");
                     proxyService.failProxy(proxy);//对失败的代理ip进行处理
                 }
-                if (null!=content){//如果拿到了返回,则不继续请求
+                if (!StringUtils.isEmpty(content)){//如果拿到了返回,则不继续请求
+                    setProxy(proxy);//请求得到了值,则设置好代理
                     requestStatus = true;
+                }else {
+                    proxy.setStatus("不可用");
+                    proxyService.failProxy(proxy);//对失败的代理ip进行处理
+                    proxy =  proxyService.getBestProxyHost(proxy);
+                    Thread.sleep(1000);
                 }
             }
             return content;
@@ -121,9 +130,13 @@ public class CrawlerSchedule {
             try{
                 content =  HttpUtils.get(url);
             }catch (Exception e){
-               proxied = true;
+               proxied = true;//普通get出问题,打开代理开关
             }
             return content;
         }
+    }
+
+    public void setProxy(Proxy proxy) {
+        this.proxy = proxy;
     }
 }

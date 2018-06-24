@@ -72,7 +72,8 @@ public class RecordService {
      * @param urls
      */
     public void initURLDouban(String seed, List<String> urls){
-        Record record = recordRepository.findByUrl(seed);
+        List<Record> records = recordRepository.findByUrl(seed);
+        Record record = records.get(0);
         if (record.getCrawled().equals("0")){
             urls.add(seed);
         }else {
@@ -98,17 +99,35 @@ public class RecordService {
             LinkTag link = (LinkTag) node;
             String nextLink = link.extractLink();
             if (nextLink.startsWith(Constants.MAINURL)){//如果是以豆瓣为开头的网址
-                Optional<Record> recordOptional = Optional.ofNullable(recordRepository.findByUrl(nextLink));
+                Optional<List<Record>> recordOptional = Optional.ofNullable(recordRepository.findByUrl(nextLink));
                 if (!recordOptional.isPresent()){//如果该条url不存在
                     //正则匹配短评和电影链接
                     Pattern moviePattern = Pattern.compile(Constants.MOVIE_REGULAR_EXP);
                     Matcher movieMatcher = moviePattern.matcher(nextLink);
                     Pattern commentPattern = Pattern.compile(Constants.COMMENT_REGULAR_EXP);
                     Matcher commentMatcher = commentPattern.matcher(nextLink);
-                    if (movieMatcher.find() || commentMatcher.find()){//找到短评和电影链接,则存入list
+                    if (movieMatcher.find() || commentMatcher.find() ){//找到短评和电影链接,则存入list
+                        if (nextLink.indexOf("sec")>0)
+                            return;
                         nextLinkList.add(nextLink);
                         recordRepository.save(new Record(nextLink));//如果循环存入list入库,可能会造成重复几率大大增加
                     }
+                }else {
+                    List<Record> list = recordOptional.get();
+                    boolean delAll = false;
+                    if (list.size()>=2){
+                        for (Record record : list){
+                            if (record.getCrawled().equals("1"))
+                                delAll = true;
+                        }
+                        if (delAll){
+                            recordRepository.deleteAll(list);
+                        }else {
+                            list.remove(0);
+                            recordRepository.deleteAll(list);
+                        }
+                    }
+
                 }
             }
         }

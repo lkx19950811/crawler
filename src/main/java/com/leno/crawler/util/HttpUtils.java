@@ -1,23 +1,38 @@
 package com.leno.crawler.util;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
+import com.leno.crawler.entity.Proxy;
+import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Configuration;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -30,9 +45,13 @@ import java.util.Date;
  * @date 2018-06-21 17:33
  * @desc http工具类
  */
+@Configuration
 public class HttpUtils {
     static Logger logger = LoggerFactory.getLogger(HttpUtils.class);
+    static private HttpRequestRetryHandler myRetryHandler = (exception, executionCount, context) -> false;
 
+    private static CloseableHttpClient prrlhttpClient = null;
+    private final static Object syncLock = new Object();
     /**
      * 设置代理get请求
      *
@@ -44,10 +63,11 @@ public class HttpUtils {
     public static String proxyGet(String url, HttpHost proxy) {
         //设置代理IP、端口、协议
 //        HttpHost proxy = new HttpHost("你的代理的IP", 8080, "http");
-        RequestConfig defaultRequestConfig = RequestConfig.custom().setProxy(proxy).setConnectTimeout(5000).setSocketTimeout(5000).setConnectionRequestTimeout(1000).build();
+        RequestConfig defaultRequestConfig = RequestConfig.custom().setProxy(proxy).setConnectTimeout(20000).setSocketTimeout(20000).setConnectionRequestTimeout(20000).build();
         //实例化CloseableHttpClient对象
-        CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build();
+        CloseableHttpClient httpClient = getHttpClient(url);
         HttpGet httpGet = setHeader(url);
+        httpGet.setConfig(defaultRequestConfig);
         String response = "";
         try {
             ResponseHandler<String> responseHandler = getResponseHandler();
@@ -55,10 +75,11 @@ public class HttpUtils {
         } catch (Exception e) {
         } finally {
             try {
+                httpGet.releaseConnection();
                 httpClient.close();
-                logger.info("请求成功,关闭链接:{}",new Date().toString());
+                logger.info("请求成功,关闭链接:{},使用代理{}",new Date().toString(),proxy);
             } catch (IOException e) {
-                logger.info("!关闭链接失败:{}",new Date().toString());
+                logger.info("!关闭链接失败:{},使用代理{}",new Date().toString(),proxy);
             }
             return DataUtils.transcoding(response, "UTF-8");
         }
@@ -181,6 +202,96 @@ public class HttpUtils {
         }
         return HttpClients.createDefault();
     }
+    /**
+     * 获取HttpClient对象
+     *
+     * @return
+     * @author SHANHY
+     * @create 2015年12月18日
+     */
+    public static CloseableHttpClient getHttpClient(String url) {
+        String hostname = url.split("/")[2];
+        int port = 80;
+        if (hostname.contains(":")) {
+            String[] arr = hostname.split(":");
+            hostname = arr[0];
+            port = Integer.parseInt(arr[1]);
+        }
+        if (prrlhttpClient == null) {
+            synchronized (syncLock) {
+                if (prrlhttpClient == null) {
+                    prrlhttpClient = createHttpClient(200, 40, 100, hostname, port);
+                }
+            }
+        }
+        return prrlhttpClient;
+    }
+
+    /**
+     * 创建HttpClient对象
+     *
+     * @return
+     * @author SHANHY
+     * @create 2015年12月18日
+     */
+    public static CloseableHttpClient createHttpClient(int maxTotal,
+                                                       int maxPerRoute, int maxRoute, String hostname, int port) {
+        ConnectionSocketFactory plainsf = PlainConnectionSocketFactory
+                .getSocketFactory();
+        LayeredConnectionSocketFactory sslsf = SSLConnectionSocketFactory
+                .getSocketFactory();
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder
+                .<ConnectionSocketFactory> create().register("http", plainsf)
+                .register("https", sslsf).build();
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(
+                registry);
+        // 将最大连接数增加
+        cm.setMaxTotal(maxTotal);
+        // 将每个路由基础的连接增加
+        cm.setDefaultMaxPerRoute(maxPerRoute);
+        HttpHost httpHost = new HttpHost(hostname, port);
+        // 将目标主机的最大连接数增加
+        cm.setMaxPerRoute(new HttpRoute(httpHost), maxRoute);
+
+        // 请求重试处理
+        HttpRequestRetryHandler httpRequestRetryHandler = (exception, executionCount, context) -> {
+            if (executionCount >= 5) {// 如果已经重试了5次，就放弃
+                return false;
+            }
+            if (exception instanceof NoHttpResponseException) {// 如果服务器丢掉了连接，那么就重试
+                return true;
+            }
+            if (exception instanceof SSLHandshakeException) {// 不要重试SSL握手异常
+                return false;
+            }
+            if (exception instanceof InterruptedIOException) {// 超时
+                return false;
+            }
+            if (exception instanceof UnknownHostException) {// 目标服务器不可达
+                return false;
+            }
+            if (exception instanceof ConnectTimeoutException) {// 连接被拒绝
+                return false;
+            }
+            if (exception instanceof SSLException) {// SSL握手异常
+                return false;
+            }
+
+            HttpClientContext clientContext = HttpClientContext
+                    .adapt(context);
+            HttpRequest request = clientContext.getRequest();
+            // 如果请求是幂等的，就再次尝试
+            if (!(request instanceof HttpEntityEnclosingRequest)) {
+                return true;
+            }
+            return false;
+        };
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setConnectionManager(cm)
+                .setRetryHandler(httpRequestRetryHandler).build();
+
+        return httpClient;
+    }
 
     public static void main(String[] args) throws ClientProtocolException, IOException {
         CloseableHttpClient hp = createSSLClientDefault();
@@ -192,6 +303,13 @@ public class HttpUtils {
         hp.close();
 
     }
-
+    /**
+     * proxy 转换 Httphost
+     * @param proxy
+     * @return
+     */
+    private static HttpHost proxyToHttphost(Proxy proxy){
+        return new HttpHost(proxy.getIp(),proxy.getPort(),proxy.getType());
+    }
 
 }
