@@ -49,7 +49,7 @@ public class ProxyService {
      * @param proxy
      */
     public void failProxy(Proxy proxy){
-        if (proxy.getTryNum()>5){
+        if (proxy.getTryNum()>3){
             proxyRepository.delete(proxy);
         }else {
             proxy.setTryNum(proxy.getTryNum() +1);

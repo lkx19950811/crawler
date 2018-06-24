@@ -44,9 +44,9 @@ public class CrawlerSchedule {
     private String seed;
     @Value("${proxied}")
     private Boolean proxyied;
-    ExecutorService fixedThreadPool = Executors.newFixedThreadPool(10);
-    @Scheduled(cron = "0/5 * * * * ?")
-//    @Scheduled(fixedDelay = 500000000)
+    ExecutorService fixedThreadPool = Executors.newFixedThreadPool(100);
+//    @Scheduled(cron = "0/1 * * * * ?")
+    @Scheduled(initialDelay = 0,fixedRate = 20000)
     public void CrawlerDouban() throws Exception {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>    开始爬取,代理设置:{}        <<<<<<<<<<<<<<<<<",proxyied);
         List<String> urls = new ArrayList<>();
@@ -55,7 +55,7 @@ public class CrawlerSchedule {
          */
         recordService.initURLDouban(seed,urls);
         for (String url : urls){
-            friendlyToDouban();//先停几秒
+//            friendlyToDouban();//先停几秒
             //可更改是否使用代理
             final String page = isProt(url,proxyied);
             if (StringUtils.isEmpty(page))continue;
@@ -117,7 +117,13 @@ public class CrawlerSchedule {
             }
             return content;
         }else {
-            return HttpUtils.get(url);
+            String content = "";
+            try{
+                content =  HttpUtils.get(url);
+            }catch (Exception e){
+               proxied = true;
+            }
+            return content;
         }
     }
 }

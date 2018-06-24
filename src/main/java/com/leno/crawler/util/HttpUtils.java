@@ -23,6 +23,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 
 /**
  * @author leon
@@ -43,7 +44,7 @@ public class HttpUtils {
     public static String proxyGet(String url, HttpHost proxy) {
         //设置代理IP、端口、协议
 //        HttpHost proxy = new HttpHost("你的代理的IP", 8080, "http");
-        RequestConfig defaultRequestConfig = RequestConfig.custom().setProxy(proxy).setConnectTimeout(10000).setSocketTimeout(10000).build();
+        RequestConfig defaultRequestConfig = RequestConfig.custom().setProxy(proxy).setConnectTimeout(5000).setSocketTimeout(5000).setConnectionRequestTimeout(1000).build();
         //实例化CloseableHttpClient对象
         CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build();
         HttpGet httpGet = setHeader(url);
@@ -55,7 +56,9 @@ public class HttpUtils {
         } finally {
             try {
                 httpClient.close();
+                logger.info("请求成功,关闭链接:{}",new Date().toString());
             } catch (IOException e) {
+                logger.info("!关闭链接失败:{}",new Date().toString());
             }
             return DataUtils.transcoding(response, "UTF-8");
         }
