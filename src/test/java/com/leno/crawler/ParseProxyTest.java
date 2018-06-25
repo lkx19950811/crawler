@@ -1,3 +1,5 @@
+package com.leno.crawler;
+
 import com.leno.crawler.service.ProxyService;
 import org.junit.Test;
 
