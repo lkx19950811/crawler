@@ -48,6 +48,9 @@ public class CrawlerSchedule {
     Proxy proxy = new Proxy();
 //    @Scheduled(cron = "0/1 * * * * ?")
     @Scheduled(initialDelay = 10000,fixedRate = 1000L * 60)//启动延迟10秒,执行间隔1分钟
+    /**
+     * 开始抓取豆瓣
+     */
     public void CrawlerDouban() throws Exception {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>    开始爬取,代理设置:{}        <<<<<<<<<<<<<<<<<",proxyied);
         List<String> urls = new ArrayList<>();

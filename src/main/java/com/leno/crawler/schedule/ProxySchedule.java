@@ -23,6 +23,12 @@ public class ProxySchedule {
     @Value("${proxyPage}")
     Integer proxyPage;
     private static String page = "0";
+
+    /**
+     * 从免费代理网站抓取地址
+     * @throws ParseException
+     * @throws InterruptedException
+     */
     @Scheduled(initialDelay = 0, fixedDelay = 1000L * 60L * 15L)//启动延迟0,间隔15分钟
 //    @Scheduled(initialDelay = 0, fixedDelay = 5000)//5秒
     public void parseProxy() throws ParseException, InterruptedException {

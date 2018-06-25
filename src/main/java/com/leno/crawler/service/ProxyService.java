@@ -35,7 +35,7 @@ public class ProxyService {
     ProxyRepository proxyRepository;
 
     /**@deprecated
-     * 随机获得代理地址
+     * 随机获得代理地址(弃用)
      * @return
      */
     public Proxy getProxyHost(){
@@ -113,7 +113,9 @@ public class ProxyService {
     }
 
     /**
-     * 抓取代理
+     * 解析代理
+     * @param page 要抓第几页的代理
+     * @throws ParseException
      */
     public void parseProxyUrl(String page) throws ParseException {
         logger.info(">>>>>>>>>>>>>> 抓代理  <<<<<<<<<<<<<");
