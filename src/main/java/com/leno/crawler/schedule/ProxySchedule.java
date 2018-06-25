@@ -2,6 +2,7 @@ package com.leno.crawler.schedule;
 
 import com.leno.crawler.service.ProxyService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -19,13 +20,15 @@ import java.util.Random;
 public class ProxySchedule {
     @Autowired
     ProxyService proxyService;
-    private static String page = "1";
-//    @Scheduled(initialDelay = 0, fixedDelay = 1000L * 60L * 15L)//15分钟
-    @Scheduled(initialDelay = 0, fixedDelay = 5000)//5秒
+    @Value("${proxyPage}")
+    Integer proxyPage;
+    private static String page = "0";
+    @Scheduled(initialDelay = 0, fixedDelay = 1000L * 60L * 15L)//启动延迟0,间隔15分钟
+//    @Scheduled(initialDelay = 0, fixedDelay = 5000)//5秒
     public void parseProxy() throws ParseException, InterruptedException {
         friendlyToDouban();
         Integer p = Integer.valueOf(page);
-        if (p==10)this.page="0";
+        if (p>=proxyPage)this.page="0";
         this.page = (p + 1 ) + "";
         proxyService.parseProxyUrl(page);
 
@@ -35,8 +38,8 @@ public class ProxySchedule {
      * 验证代理状态
      * @throws InterruptedException
      */
-    @Scheduled(initialDelay = 10000, fixedDelay = 1000L * 60L)//1分钟
-    public void verifyProxy() throws InterruptedException {
+    @Scheduled(initialDelay = 1000 * 15, fixedDelay = 1000L * 60L * 5L)//启动延迟15秒,验证间隔5分钟
+    public void verifyProxy() throws InterruptedException, ParseException {
         proxyService.verifyProxy();
     }
     /**

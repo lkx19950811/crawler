@@ -23,7 +23,7 @@ public class Comments {
     /**
      * 评论内容
      */
-    @Column(name = "commentInfo")
+    @Column(name = "commentInfo",columnDefinition = "text")
     private String commentInfo;
     /**
      * 评论者

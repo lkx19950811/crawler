@@ -84,22 +84,31 @@ public class ProxyService {
     /**
      * 验证可用Proxy
      */
-    public void verifyProxy() throws InterruptedException {
+    public void verifyProxy() throws InterruptedException, ParseException {
         logger.info("验证代理状态");
         List<Proxy> proxies = proxyRepository.findAll();
+//        if (proxies.size()<10){//如果库里的代理数量小于10,则再去抓
+//            parseProxyUrl("1");
+//        }
         for (Proxy proxy:proxies){
             friendlyToDouban();
             HttpHost host = new HttpHost(proxy.getIp(),proxy.getPort(),proxy.getType());
-            String res = HttpUtils.proxyGet("https://www.baidu.com",host);
+            String res = HttpUtils.proxyGet("https://www.baidu.com",host);//开始验证代理地址
             if (!StringUtils.isEmpty(res)){
                 proxy.setStatus("可用");
                 proxy.setConDate(new Date());
                 proxy = proxyRepository.save(proxy);
             }else {
-                proxy.setStatus("不可用");
-                proxy = proxyRepository.save(proxy);
+                if (proxy.getTryNum()>=2){
+                    proxyRepository.delete(proxy);
+                }else {
+                    proxy.setStatus("不可用");
+                    proxy.setTryNum(proxy.getTryNum()+1);
+                    proxy = proxyRepository.save(proxy);
+                }
+
             }
-            logger.info("验证代理状态{},{}",proxy.getStatus(),proxy.getIp());
+            logger.info("验证代理状态:>>>{}<<<,{}",proxy.getStatus(),proxy);
         }
     }
 
@@ -108,6 +117,9 @@ public class ProxyService {
      */
     public void parseProxyUrl(String page) throws ParseException {
         logger.info(">>>>>>>>>>>>>> 抓代理  <<<<<<<<<<<<<");
+        if (page.equals("1")){
+            page = "";
+        }
         String content = HttpUtils.get("http://www.xicidaili.com/wt/" + page);
         Document document = Jsoup.parse(content);
         Elements elements = document.getElementById("ip_list").getElementsByTag("tbody");
@@ -118,21 +130,21 @@ public class ProxyService {
                 if (tr.toString().contains("国家")){//说明不是ip列表
                     continue;
                 }else {
-                    String secReg = ".*(\\d+\\.\\d+).*";
+                    String secReg = ".*(\\d+\\.\\d+).*";//匹配 title= 0.12秒中的秒数
                     Pattern r = Pattern.compile(secReg);
-                    Matcher m = r.matcher(tr.children().get(6).toString());
+                    Matcher m = r.matcher(tr.children().get(6).toString());//存在tr节点中的第7个节点
                     if (m.find()){
                         Double sec = Double.valueOf(m.group(1));
-                        if (sec>1.0)continue;
+                        if (sec>1.0)continue;//如果该代理连接速度大于1秒,则舍弃
                     }
-                    if (!tr.child(4).text().equals("高匿")){
+                    if (!tr.child(4).text().equals("高匿")){//如果该代理不是高匿,舍弃
                         continue;
                     }
-                    String ipReg = "^(\\d+\\.\\d+\\.\\d+\\.\\d+).*";
+                    String ipReg = "^(\\d+\\.\\d+\\.\\d+\\.\\d+).*";//匹配代理的ip地址
                     r = Pattern.compile(ipReg);
                     m = r.matcher(tr.text());
                     if (m.find()){
-                        String ip = m.group(1);
+                        String ip = m.group(1).trim();
                         Optional optional = Optional.ofNullable(proxyRepository.findByIp(ip));
                         if (optional.isPresent()){
                             continue;
@@ -140,17 +152,17 @@ public class ProxyService {
                             proxy.setIp(ip);
                         }
                     }
-                    String portReg = "[\\s](\\d+)[\\s]";
+                    String portReg = "[\\s](\\d+)[\\s]";//匹配端口号
                     r = Pattern.compile(portReg);
                     m = r.matcher(tr.text());
                     if (m.find()){
-                        String port = m.group(1);
+                        String port = m.group(1).trim();
                         proxy.setPort(Integer.valueOf(port));
                     }
                     proxy.setType("http");
 
-                    SimpleDateFormat format = new SimpleDateFormat("yy-MM-dd mm:ss");
-                    String str = tr.child(9).text();
+                    SimpleDateFormat format = new SimpleDateFormat("yy-MM-dd HH:mm");
+                    String str = tr.child(9).text().trim();//获取最近验证时间
                     proxy.setConDate(format.parse(str));
                     proxyRepository.save(proxy);
                     logger.info("Saving >>>>>>>>>>>>>>>> {}:{}",proxy.getIp(),proxy.getPort());

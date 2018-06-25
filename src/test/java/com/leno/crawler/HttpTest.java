@@ -1,3 +1,5 @@
+package com.leno.crawler;
+
 import com.leno.crawler.util.HttpUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -22,14 +24,14 @@ public class HttpTest  {
 
     @Test
     public void testHttpProxy() throws Exception {
-        HttpHost porxy = new HttpHost("60.176.235.63",6666,"http");
-        String res = HttpUtils.proxyGet("https://blog.csdn.net/ryelqy/article/details/75331453",porxy);
+        HttpHost porxy = new HttpHost("118.190.95.35",9001,"http");
+        String res = HttpUtils.proxyGet("https://www.douban.com",porxy);
         System.out.println(res);
     }
     @Test
     public void test1() throws IOException {
         HttpClientBuilder build = HttpClients.custom();
-        HttpHost proxy = new HttpHost("114.226.135.188", 6666);
+        HttpHost proxy = new HttpHost("180.107.137.192", 61202);
         CloseableHttpClient client = build.setProxy(proxy).build();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(20000).setConnectTimeout(20000).build();//设置请求和传输超时时间
         HttpGet request = new HttpGet("https://blog.csdn.net/ryelqy/article/details/75331453");
@@ -37,6 +39,8 @@ public class HttpTest  {
         CloseableHttpResponse response = client.execute(request);
         HttpEntity entity = response.getEntity();
         System.out.println(EntityUtils.toString(entity));
+        response.close();
+        client.close();
     }
     @Test
     public void test2(){

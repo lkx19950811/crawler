@@ -47,7 +47,7 @@ public class CrawlerSchedule {
     ExecutorService fixedThreadPool = Executors.newFixedThreadPool(100);
     Proxy proxy = new Proxy();
 //    @Scheduled(cron = "0/1 * * * * ?")
-    @Scheduled(initialDelay = 10000,fixedRate = 20000)
+    @Scheduled(initialDelay = 10000,fixedRate = 1000L * 60)//启动延迟10秒,执行间隔1分钟
     public void CrawlerDouban() throws Exception {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>    开始爬取,代理设置:{}        <<<<<<<<<<<<<<<<<",proxyied);
         List<String> urls = new ArrayList<>();
@@ -103,6 +103,7 @@ public class CrawlerSchedule {
         if (proxied){
             String content = "";
             boolean requestStatus = false;
+            Integer countTry = 0;
             while (!requestStatus){//循环使用代理,失败则切换
                 if (proxy.getIp()==null)//当前使用的代理未指定,先获取代理
                 proxy =  proxyService.getBestProxyHost(proxy);
@@ -121,6 +122,9 @@ public class CrawlerSchedule {
                     proxy.setStatus("不可用");
                     proxyService.failProxy(proxy);//对失败的代理ip进行处理
                     proxy =  proxyService.getBestProxyHost(proxy);
+                    if (++countTry>3){//重复切换代理超过3次,暂时放过此条url
+                        requestStatus = true;
+                    }
                     Thread.sleep(1000);
                 }
             }
@@ -130,7 +134,7 @@ public class CrawlerSchedule {
             try{
                 content =  HttpUtils.get(url);
             }catch (Exception e){
-               proxied = true;//普通get出问题,打开代理开关
+               this.proxyied = true;//普通get出问题,打开代理开关
             }
             return content;
         }

@@ -36,5 +36,10 @@ public class CrawlerApplicationTests {
     public void test2(){
         recordRepository.setRecordONE("https://movie.douban.com/");
     }
+    @Test
+    public void test3(){
+        List list = recordRepository.findByUrl("https://movie.douban4.com/");
+        System.out.println(list);
+    }
 
 }

@@ -120,7 +120,6 @@ public class Proxy {
     @Override
     public String toString() {
         return "Proxy{" +
-                "id=" + id +
                 ", ip='" + ip + '\'' +
                 ", port=" + port +
                 ", types='" + type + '\'' +

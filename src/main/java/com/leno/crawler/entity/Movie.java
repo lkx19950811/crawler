@@ -32,7 +32,7 @@ public class Movie {
     /**
      * 主演
      */
-    @Column(name = "actors")
+    @Column(name = "actors",length = 500)
     private String actors;
     /**
      * 类型

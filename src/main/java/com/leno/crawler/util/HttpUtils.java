@@ -203,7 +203,7 @@ public class HttpUtils {
         return HttpClients.createDefault();
     }
     /**
-     * 获取HttpClient对象
+     * 获取HttpClient对象(使用连接池,不然会造成堵塞)
      *
      * @return
      * @author SHANHY
@@ -212,6 +212,9 @@ public class HttpUtils {
     public static CloseableHttpClient getHttpClient(String url) {
         String hostname = url.split("/")[2];
         int port = 80;
+        if (url.indexOf("https")>0){
+            port = 443;
+        }
         if (hostname.contains(":")) {
             String[] arr = hostname.split(":");
             hostname = arr[0];
@@ -255,7 +258,7 @@ public class HttpUtils {
 
         // 请求重试处理
         HttpRequestRetryHandler httpRequestRetryHandler = (exception, executionCount, context) -> {
-            if (executionCount >= 5) {// 如果已经重试了5次，就放弃
+            if (executionCount >= 3) {// 如果已经重试了3次，就放弃
                 return false;
             }
             if (exception instanceof NoHttpResponseException) {// 如果服务器丢掉了连接，那么就重试

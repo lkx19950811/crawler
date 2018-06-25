@@ -73,12 +73,20 @@ public class RecordService {
      */
     public void initURLDouban(String seed, List<String> urls){
         List<Record> records = recordRepository.findByUrl(seed);
-        Record record = records.get(0);
-        if (record.getCrawled().equals("0")){
+        Record record = new Record();
+        if (records.size()>0){//种子地址存在
+            record = records.get(0);
+        }else {//种子地址不存在
+            record.setCrawled("0");
+            record.setUrl(seed);
+            recordRepository.save(record);
+        }
+        if (record.getCrawled().equals("0")){//如果种子地址还没被爬取过,则从urls添加种子地址
             urls.add(seed);
         }else {
             urls.addAll(recordRepository.findUrlbyStatus("0"));
         }
+
     }
 
     /**
@@ -88,7 +96,6 @@ public class RecordService {
     public void setRecordONE(String url){
         recordRepository.setRecordONE(url);
     }
-    //TODO 这个有问题!!!!!!!!!!!!!
     /**
      * 解析单个节点
      * @param nextLinkList
