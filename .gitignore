@@ -1,3 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
 .gitignore
 .idea/
+/crawler.iml
+.mvn/
+crawler.iml
+src/test/java/com/
+target/
