@@ -160,7 +160,8 @@ public class HttpUtils {
                 return entity != null ? EntityUtils.toString(entity) : null;
             } else if (status == 300 || status == 301 || status == 302 || status == 304 || status == 400 ||
                     status == 401 || status == 403 || status == 404 || new String(status + "").startsWith("5")) { //refer to link http://blog.csdn.net/u012043391/article/details/51069441
-                return null;
+                if (status==404)return "404";//404页面不存在,添加标志
+                return null;//其他则是请求错误,被策略组拒绝,稍后继续请求
             } else {
                 throw new ClientProtocolException("Unexpected response status: " + status);
             }

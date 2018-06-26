@@ -34,7 +34,7 @@ public class MovieService {
      * @param content 请求到的页面
      */
     public void parseMovie(String content,String url){
-        logger.info("==========Parse Movie:" + url + "============");
+        logger.info("========== Parse Movie:" + url);
         //parse movie detail page
         Pattern moviePattern = Pattern.compile(Constants.MOVIE_REGULAR_EXP);//初始化正则
         Matcher movieMatcher = moviePattern.matcher(url);

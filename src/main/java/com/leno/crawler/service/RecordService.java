@@ -61,7 +61,6 @@ public class RecordService {
                 logger.info(">>>>>>>>>>>>>存入{}条链接<<<<<<<<<<<<<",nextLinkList.size());
             }
         }catch (Exception e){
-            e.printStackTrace();
         }
 
     }

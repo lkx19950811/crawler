@@ -34,7 +34,7 @@ public class CommentService {
      * @param url
      */
     public void parseComment(String content,String url){
-        logger.info("==========Parse Comment:" + url + "============");
+        logger.info("==========   Parse Comment:" + url);
         //parse comment page
         Pattern commentPattern = Pattern.compile(Constants.COMMENT_REGULAR_EXP);
         Matcher commentMatcher = commentPattern.matcher(url);
