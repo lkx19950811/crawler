@@ -147,7 +147,7 @@ public class Movie {
     }
 
     public void setRuntime(String runtime) {
-        runtime = runtime;
+        this.runtime = runtime;
     }
 
     public String getRatingNum() {

@@ -12,7 +12,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * 描述:
@@ -24,14 +24,14 @@ public class HttpTest  {
 
     @Test
     public void testHttpProxy() throws Exception {
-        HttpHost porxy = new HttpHost("118.190.95.35",9001,"http");
+        HttpHost porxy = new HttpHost("222.185.160.45",6666,"https");
         String res = HttpUtils.proxyGet("https://www.douban.com",porxy);
         System.out.println(res);
     }
     @Test
     public void test1() throws IOException {
         HttpClientBuilder build = HttpClients.custom();
-        HttpHost proxy = new HttpHost("180.107.137.192", 61202);
+        HttpHost proxy = new HttpHost("115.223.240.136", 9000);
         CloseableHttpClient client = build.setProxy(proxy).build();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(20000).setConnectTimeout(20000).build();//设置请求和传输超时时间
         HttpGet request = new HttpGet("https://blog.csdn.net/ryelqy/article/details/75331453");
@@ -44,7 +44,13 @@ public class HttpTest  {
     }
     @Test
     public void test2(){
-        String res = HttpUtils.get("https://blog.csdn.net/ryelqy/article/details/75331453");
+        String res = HttpUtils.get("https://movie.douban.com/subject/26756258/");
         System.out.println(res);
     }
+    @Test
+    public void test3(){
+        String res = HttpUtils.get("http://ip.baizhongsou.com/?u=lkx19950811&p=6e3e5706735627a2&sl=1000");
+        System.out.println(res);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.leno.crawler;
 
 import com.leno.crawler.repository.RecordRepository;
+import com.leno.crawler.service.ProxyService;
 import com.leno.crawler.service.RecordService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +22,8 @@ public class CrawlerApplicationTests {
     RecordRepository recordRepository;
     @Autowired
     RecordService service;
+    @Autowired
+    ProxyService proxyService;
     @Test
     public void contextLoads() {
         recordRepository.findUrlbyStatus("0");
@@ -42,4 +45,11 @@ public class CrawlerApplicationTests {
         System.out.println(list);
     }
 
+    /**
+     * 获取vip地址 http://ip.baizhongsou.com/
+     */
+    @Test
+    public void getVip(){
+        proxyService.getVipHost();
+    }
 }

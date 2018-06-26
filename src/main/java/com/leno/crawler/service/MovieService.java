@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -88,6 +89,8 @@ public class MovieService {
         }
         String movieName = movie.getName();
         if (!StringUtils.isEmpty(movieName)){
+            List list = movieRepository.findByName(movieName);
+            if (list.size()>0)return;//如果存在则丢弃
             movieRepository.save(movie);
             logger.info(">>>>>>saving " + movie.getName() + "<<<<<<");
         }

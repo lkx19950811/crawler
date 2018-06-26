@@ -63,7 +63,12 @@ public class HttpUtils {
     public static String proxyGet(String url, HttpHost proxy) {
         //设置代理IP、端口、协议
 //        HttpHost proxy = new HttpHost("你的代理的IP", 8080, "http");
-        RequestConfig defaultRequestConfig = RequestConfig.custom().setProxy(proxy).setConnectTimeout(20000).setSocketTimeout(20000).setConnectionRequestTimeout(20000).build();
+        RequestConfig defaultRequestConfig = RequestConfig.custom().
+                setProxy(proxy).
+                setConnectTimeout(20000).
+                setSocketTimeout(20000).
+                setConnectionRequestTimeout(20000)
+                .setAuthenticationEnabled(false).build();
         //实例化CloseableHttpClient对象
         CloseableHttpClient httpClient = getHttpClient(url);
         HttpGet httpGet = setHeader(url);
@@ -77,9 +82,9 @@ public class HttpUtils {
             try {
                 httpGet.releaseConnection();
                 httpClient.close();
-                logger.info("请求成功,关闭链接:{},使用代理{}",new Date().toString(),proxy);
+                logger.info("关闭连接,代理{}",proxy);
             } catch (IOException e) {
-                logger.info("!关闭链接失败:{},使用代理{}",new Date().toString(),proxy);
+                logger.error("!关闭链接失败,代理{}",proxy);
             }
             return DataUtils.transcoding(response, "UTF-8");
         }

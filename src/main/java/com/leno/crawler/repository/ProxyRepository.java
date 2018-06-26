@@ -15,10 +15,10 @@ public interface ProxyRepository extends Repository<Proxy> {
     Proxy findByIp(String ip);
 
     /**
-     * 按照验证时间 由近至远排序,并排除传入ip
+     * 按照验证时间 由近至远排序,并排除传入ip,查找可用代理
      * @return
      */
-    @Query("select p from Proxy p where p.ip not in ?1 order by p.conDate desc ")
+    @Query("select p from Proxy p where p.ip not in ?1 and p.status ='可用' order by p.conDate desc ")
     List<Proxy> findAllByIpNotInOrderByConDateDesc(String ip);
 
     /**

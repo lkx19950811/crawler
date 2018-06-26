@@ -11,9 +11,11 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.sound.sampled.Port;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,6 +24,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author leon
@@ -33,7 +37,10 @@ public class ProxyService {
     private static final Logger logger = LoggerFactory.getLogger(ProxyService.class);
     @Autowired
     ProxyRepository proxyRepository;
-
+    @Value("${proxyURL}")
+    String proxyURL;
+    @Value("${vipUrl}")
+    String vipUrl;
     /**@deprecated
      * 随机获得代理地址(弃用)
      * @return
@@ -55,8 +62,14 @@ public class ProxyService {
      * @return
      */
     public Proxy getBestProxyHost(Proxy proxy){
-        if (proxy.getIp()==null){
-            proxy = proxyRepository.findAllByOrOrderByConDate().get(0);
+        if (proxy.getIp()==null){//上一次没有成功记录,则搜出全部ip
+            List<Proxy> proxies = proxyRepository.findAllByOrOrderByConDate();
+            for (Proxy pr : proxies){
+                if (pr.getStatus().equals("可用")){
+                    return pr;
+                }
+            }
+            return proxies.get(0);//是在没找到凑合着用
         }
         List<Proxy> list = proxyRepository.findAllByIpNotInOrderByConDateDesc(proxy.getIp());
         for (Proxy pr : list){
@@ -69,6 +82,7 @@ public class ProxyService {
 
     /**
      * 代理失败对Proxy进行失败记录
+     *
      * @param proxy
      */
     public void failProxy(Proxy proxy){
@@ -122,7 +136,7 @@ public class ProxyService {
         if (page.equals("1")){
             page = "";
         }
-        String content = HttpUtils.get("http://www.xicidaili.com/wt/" + page);
+        String content = HttpUtils.get(proxyURL + page);
         Document document = Jsoup.parse(content);
         Elements elements = document.getElementById("ip_list").getElementsByTag("tbody");
         if (elements.size()==1){
@@ -137,7 +151,7 @@ public class ProxyService {
                     Matcher m = r.matcher(tr.children().get(6).toString());//存在tr节点中的第7个节点
                     if (m.find()){
                         Double sec = Double.valueOf(m.group(1));
-                        if (sec>1.0)continue;//如果该代理连接速度大于1秒,则舍弃
+                        if (sec>4.0)continue;//如果该代理连接速度大于4秒,则舍弃
                     }
                     if (!tr.child(4).text().equals("高匿")){//如果该代理不是高匿,舍弃
                         continue;
@@ -161,7 +175,8 @@ public class ProxyService {
                         String port = m.group(1).trim();
                         proxy.setPort(Integer.valueOf(port));
                     }
-                    proxy.setType("http");
+                    String type = tr.child(5).text();//拿到代理类型
+                    proxy.setType(type);
 
                     SimpleDateFormat format = new SimpleDateFormat("yy-MM-dd HH:mm");
                     String str = tr.child(9).text().trim();//获取最近验证时间
@@ -171,6 +186,17 @@ public class ProxyService {
                 }
             }
         }
+    }
+
+    /**
+     * 获取vip线路
+     */
+    public void getVipHost(){
+        String res = HttpUtils.get(vipUrl);
+        String[] ips = res.split("<br>");
+        List<Proxy> proxies =  Stream.of(ips).map(Proxy::new).collect(Collectors.toList());
+        proxyRepository.saveAll(proxies);
+        logger.info("存入{}条",proxies.size());
     }
     /**
      * 随机停止1到10秒

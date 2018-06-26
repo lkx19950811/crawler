@@ -60,21 +60,23 @@ public class CrawlerSchedule {
         recordService.initURLDouban(seed,urls);
         for (String url : urls){
             friendlyToDouban();//先停几秒
-            //可更改是否使用代理
-            final String page = isProt(url,proxyied);
-            if (StringUtils.isEmpty(page))continue;
-            Thread recordThread = new Thread(() -> {
-                recordService.parseUrl(page);
-            });
-            Thread movieThread = new Thread(() -> {
-                movieService.parseMovie(page,url);
-            });
-            Thread commentThread = new Thread(() -> {
-                commentService.parseComment(page,url);
-            });
-            fixedThreadPool.execute(recordThread);
-            fixedThreadPool.execute(movieThread);
-            fixedThreadPool.execute(commentThread);
+            if (url.indexOf("mupload")<0){
+                //可更改是否使用代理
+                final String page = isProt(url,proxyied);
+                if (StringUtils.isEmpty(page))continue;
+                Thread recordThread = new Thread(() -> {
+                    recordService.parseUrl(page);
+                });
+                Thread movieThread = new Thread(() -> {
+                    movieService.parseMovie(page,url);
+                });
+                Thread commentThread = new Thread(() -> {
+                    commentService.parseComment(page,url);
+                });
+                fixedThreadPool.execute(recordThread);
+                fixedThreadPool.execute(movieThread);
+                fixedThreadPool.execute(commentThread);
+            }
             recordService.setRecordONE(url);//将爬取过的标记为1
         }
     }
@@ -137,7 +139,7 @@ public class CrawlerSchedule {
             try{
                 content =  HttpUtils.get(url);
             }catch (Exception e){
-               this.proxyied = true;//普通get出问题,打开代理开关
+//               this.proxyied = true;//普通get出问题,打开代理开关
             }
             return content;
         }

@@ -39,7 +39,7 @@ public class Proxy {
     /**
      * 最后验证时间
      */
-    private Date conDate;
+    private Date conDate = new Date();
     /**
      * 代理状态
      */
@@ -120,7 +120,7 @@ public class Proxy {
     @Override
     public String toString() {
         return "Proxy{" +
-                ", ip='" + ip + '\'' +
+                "ip='" + ip + '\'' +
                 ", port=" + port +
                 ", types='" + type + '\'' +
                 '}';
