@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,8 +104,8 @@ public class RecordService {
             LinkTag link = (LinkTag) node;
             String nextLink = link.extractLink();
             if (nextLink.startsWith(Constants.MAINURL)){//如果是以豆瓣为开头的网址
-                Optional<List<Record>> recordOptional = Optional.ofNullable(recordRepository.findByUrl(nextLink));
-                if (!recordOptional.isPresent()){//如果该条url不存在
+                List<Record> list = recordRepository.findByUrl(nextLink);
+                if (list.size()<=0){//如果该条url不存在
                     //正则匹配短评和电影链接
                     Pattern moviePattern = Pattern.compile(Constants.MOVIE_REGULAR_EXP);
                     Matcher movieMatcher = moviePattern.matcher(nextLink);
@@ -119,7 +118,6 @@ public class RecordService {
                         recordRepository.save(new Record(nextLink));//如果循环存入list入库,可能会造成重复几率大大增加
                     }
                 }else {
-                    List<Record> list = recordOptional.get();
                     boolean delAll = false;
                     if (list.size()>=2){
                         for (Record record : list){
