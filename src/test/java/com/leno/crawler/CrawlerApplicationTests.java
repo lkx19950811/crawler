@@ -51,5 +51,6 @@ public class CrawlerApplicationTests {
     @Test
     public void getVip(){
         proxyService.getVipHost();
+
     }
 }

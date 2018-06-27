@@ -24,7 +24,7 @@ public class HttpTest  {
 
     @Test
     public void testHttpProxy() throws Exception {
-        HttpHost porxy = new HttpHost("222.185.160.45",6666,"https");
+        HttpHost porxy = new HttpHost("114.231.68.97",18118,"https");
         String res = HttpUtils.proxyGet("https://www.douban.com",porxy);
         System.out.println(res);
     }
@@ -52,5 +52,4 @@ public class HttpTest  {
         String res = HttpUtils.get("http://ip.baizhongsou.com/?u=lkx19950811&p=6e3e5706735627a2&sl=1000");
         System.out.println(res);
     }
-
 }

@@ -29,7 +29,7 @@ public class ProxySchedule {
      * @throws ParseException
      * @throws InterruptedException
      */
-    @Scheduled(initialDelay = 0, fixedDelay = 1000L * 60L * 15L)//启动延迟0,间隔15分钟
+//    @Scheduled(initialDelay = 0, fixedDelay = 1000L * 60L * 15L)//启动延迟0,间隔15分钟
 //    @Scheduled(initialDelay = 0, fixedDelay = 5000)//5秒
     public void parseProxy() throws ParseException, InterruptedException {
         friendlyToDouban();
@@ -44,7 +44,7 @@ public class ProxySchedule {
      * 验证代理状态
      * @throws InterruptedException
      */
-    @Scheduled(initialDelay = 1000 * 15, fixedDelay = 1000L * 60L * 5L)//启动延迟15秒,验证间隔5分钟
+//    @Scheduled(initialDelay = 1000 * 15, fixedDelay = 1000L * 60L * 5L)//启动延迟15秒,验证间隔5分钟
     public void verifyProxy() throws InterruptedException, ParseException {
         proxyService.verifyProxy();
     }

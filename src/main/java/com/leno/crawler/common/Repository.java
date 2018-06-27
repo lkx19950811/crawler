@@ -14,5 +14,4 @@ import org.springframework.transaction.annotation.Transactional;
 @NoRepositoryBean
 @Transactional
 public interface Repository<T> extends JpaRepository<T, Long>, JpaSpecificationExecutor<T> {
-
 }
