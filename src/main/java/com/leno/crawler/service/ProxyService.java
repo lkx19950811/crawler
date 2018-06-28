@@ -99,7 +99,7 @@ public class ProxyService {
      * 验证可用Proxy
      */
     public void verifyProxy() throws InterruptedException, ParseException {
-        logger.info("验证代理状态");
+        logger.info(">>>>>>>>>>>>>> 开始验证代理状态 <<<<<<<<<<<<<");
         List<Proxy> proxies = proxyRepository.findAll();
 //        if (proxies.size()<10){//如果库里的代理数量小于10,则再去抓
 //            parseProxyUrl("1");
@@ -132,7 +132,7 @@ public class ProxyService {
      * @throws ParseException
      */
     public void parseProxyUrl(String page) throws ParseException {
-        logger.info(">>>>>>>>>>>>>> 抓代理  <<<<<<<<<<<<<");
+        logger.info(">>>>>>>>>>>>>> 开始抓取代理 <<<<<<<<<<<<<<<<");
         if (page.equals("1")){
             page = "";
         }

@@ -52,4 +52,9 @@ public class HttpTest  {
         String res = HttpUtils.get("http://ip.baizhongsou.com/?u=lkx19950811&p=6e3e5706735627a2&sl=1000");
         System.out.println(res);
     }
+    @Test
+    public void test4(){
+        String str = "\uD83D\uDE02\uFEFF";
+        System.out.println(str);
+    }
 }
