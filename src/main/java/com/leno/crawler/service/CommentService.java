@@ -69,6 +69,7 @@ public class CommentService {
                     comments.setCommentAuthorImgUrl(comment.getElementsByAttribute("href").get(2).attr("href"));
 
                     //save comment record
+                    //TODO 有些评论里带表情,需要验证是否带emoji表情,我觉得最好是过滤,不然要改mysql,跟换血一样
                     Optional<Comments> optionalComments = Optional.ofNullable(commentRepository.findByCommentInfo(comments.getCommentInfo()));
                     if (!optionalComments.isPresent()){//如果该条评论不存在
                         commentRepository.save(comments);
