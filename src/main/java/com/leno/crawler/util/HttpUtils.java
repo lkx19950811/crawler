@@ -82,7 +82,7 @@ public class HttpUtils {
             try {
                 httpGet.releaseConnection();
                 httpClient.close();
-                logger.info("关闭连接,代理{}",proxy);
+//                logger.info("关闭连接,代理{}",proxy);
             } catch (IOException e) {
                 logger.error("!关闭链接失败,代理{}",proxy);
             }

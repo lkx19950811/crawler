@@ -24,14 +24,14 @@ public class HttpTest  {
 
     @Test
     public void testHttpProxy() throws Exception {
-        HttpHost porxy = new HttpHost("114.231.68.97",18118,"https");
-        String res = HttpUtils.proxyGet("https://www.douban.com",porxy);
+        HttpHost porxy = new HttpHost("111.155.116.232",8123,"https");
+        String res = HttpUtils.proxyGetHttps("https://www.douban.com",porxy);
         System.out.println(res);
     }
     @Test
     public void test1() throws IOException {
         HttpClientBuilder build = HttpClients.custom();
-        HttpHost proxy = new HttpHost("115.223.240.136", 9000);
+        HttpHost proxy = new HttpHost("118.190.95.43", 9001);
         CloseableHttpClient client = build.setProxy(proxy).build();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(20000).setConnectTimeout(20000).build();//设置请求和传输超时时间
         HttpGet request = new HttpGet("https://blog.csdn.net/ryelqy/article/details/75331453");
@@ -44,12 +44,13 @@ public class HttpTest  {
     }
     @Test
     public void test2(){
-        String res = HttpUtils.get("https://movie.douban.com/subject/26756258/");
-        System.out.println(res);
+//        String res = HttpUtils.get("https://movie.douban.com/subject/26416062/?from=showing");
+//        System.out.println(res);
+        System.out.println(" ॣ ");
     }
     @Test
     public void test3(){
-        String res = HttpUtils.get("http://ip.baizhongsou.com/?u=lkx19950811&p=6e3e5706735627a2&sl=1000");
+        String res = HttpUtils.get("https://www.baidu.com");
         System.out.println(res);
     }
     @Test

@@ -3,6 +3,7 @@ package com.leno.crawler.service;
 import com.leno.crawler.entity.Proxy;
 import com.leno.crawler.repository.ProxyRepository;
 import com.leno.crawler.util.HttpUtils;
+import com.leno.crawler.util.ThreadManager;
 import org.apache.http.HttpHost;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -98,16 +101,16 @@ public class ProxyService {
     /**
      * 验证可用Proxy
      */
-    public void verifyProxy() throws InterruptedException, ParseException {
+    public void verifyProxy() throws InterruptedException, ParseException, ExecutionException {
         logger.info(">>>>>>>>>>>>>> 开始验证代理状态 <<<<<<<<<<<<<");
         List<Proxy> proxies = proxyRepository.findAll();
 //        if (proxies.size()<10){//如果库里的代理数量小于10,则再去抓
 //            parseProxyUrl("1");
 //        }
         for (Proxy proxy:proxies){
-            friendlyToDouban();
             HttpHost host = new HttpHost(proxy.getIp(),proxy.getPort(),proxy.getType());
-            String res = HttpUtils.proxyGet("https://www.baidu.com",host);//开始验证代理地址
+            Callable<String> callable = () -> {return HttpUtils.proxyGet("https://www.douban.com",host); };
+            String res = ThreadManager.getInstance().submit(callable).get();//开始验证代理地址
             if (!StringUtils.isEmpty(res)){
                 proxy.setStatus("可用");
                 proxy.setConDate(new Date());
@@ -120,9 +123,11 @@ public class ProxyService {
                     proxy.setTryNum(proxy.getTryNum()+1);
                     proxy = proxyRepository.save(proxy);
                 }
-
             }
-            logger.info("验证代理状态:>>>{}<<<,{}",proxy.getStatus(),proxy);
+            if (proxy.getStatus().equals("可用")){
+                logger.info("发现可用代理:>>>{}<<<,{}",proxy.getStatus(),proxy);
+            }
+//            logger.info("验证代理状态:>>>{}<<<,{}",proxy.getStatus(),proxy);
         }
     }
 

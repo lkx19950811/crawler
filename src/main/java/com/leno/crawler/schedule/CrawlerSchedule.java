@@ -7,6 +7,7 @@ import com.leno.crawler.service.MovieService;
 import com.leno.crawler.service.ProxyService;
 import com.leno.crawler.service.RecordService;
 import com.leno.crawler.util.HttpUtils;
+import com.leno.crawler.util.ThreadManager;
 import org.apache.http.HttpHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +20,6 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author leon
@@ -44,7 +43,6 @@ public class CrawlerSchedule {
     private String seed;
     @Value("${proxied}")
     private Boolean proxyied;
-    ExecutorService fixedThreadPool = Executors.newFixedThreadPool(100);
     Proxy proxy = new Proxy();
 //    @Scheduled(cron = "0/1 * * * * ?")
     @Scheduled(initialDelay = 10000,fixedRate = 1000L * 60)//启动延迟10秒,执行间隔1分钟
@@ -52,6 +50,7 @@ public class CrawlerSchedule {
      * 开始抓取豆瓣
      */
     public void CrawlerDouban() throws Exception {
+        ThreadManager.ThreadPool executor = ThreadManager.getInstance();
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>    开始爬取,代理设置:{}        <<<<<<<<<<<<<<<<<",proxyied);
         List<String> urls = new ArrayList<>();
         /*
@@ -73,9 +72,9 @@ public class CrawlerSchedule {
                 Thread commentThread = new Thread(() -> {
                     commentService.parseComment(page,url);
                 });
-                fixedThreadPool.execute(recordThread);
-                fixedThreadPool.execute(movieThread);
-                fixedThreadPool.execute(commentThread);
+                ThreadManager.getInstance().execute(recordThread);
+                ThreadManager.getInstance().execute(movieThread);
+                ThreadManager.getInstance().execute(commentThread);
             }
             recordService.setRecordONE(url);//将爬取过的标记为1
         }

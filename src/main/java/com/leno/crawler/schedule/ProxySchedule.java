@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -53,8 +54,8 @@ public class ProxySchedule {
      * 验证代理状态
      * @throws InterruptedException
      */
-    @Scheduled(initialDelay = 1000 * 15, fixedDelay = 1000L * 60L * 5L)//启动延迟15秒,验证间隔5分钟
-    public void verifyProxy() throws InterruptedException, ParseException {
+    @Scheduled(initialDelay = 1000 * 45, fixedDelay = 1000L * 60L * 5L)//启动延迟45秒,验证间隔5分钟
+    public void verifyProxy() throws InterruptedException, ParseException, ExecutionException {
         if (isverifyProxy){
             proxyService.verifyProxy();
         }else {
