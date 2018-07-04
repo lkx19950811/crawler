@@ -116,7 +116,7 @@ public class ProxyService {
                 proxy.setConDate(new Date());
                 proxy = proxyRepository.save(proxy);
             }else {
-                if (proxy.getTryNum()>=2){
+                if (proxy.getTryNum()>=3){
                     proxyRepository.delete(proxy);
                 }else {
                     proxy.setStatus("不可用");

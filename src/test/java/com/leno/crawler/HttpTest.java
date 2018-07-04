@@ -55,7 +55,7 @@ public class HttpTest  {
     }
     @Test
     public void test4(){
-        String str = "\uD83D\uDE02\uFEFF";
+        String str = "\\xF0\\x9F\\x90\\xB0";
         System.out.println(str);
     }
 }
