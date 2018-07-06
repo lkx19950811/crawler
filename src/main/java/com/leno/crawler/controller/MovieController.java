@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * @author leon
  * @date 2018-06-21 10:14
- * @desc
+ * @desc 测试springmvc
  */
 @RestController
 public class MovieController {
