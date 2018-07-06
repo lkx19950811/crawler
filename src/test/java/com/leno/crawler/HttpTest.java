@@ -55,7 +55,7 @@ public class HttpTest  {
     }
     @Test
     public void test4(){
-        String str = "\\xF0\\x9F\\x90\\xB0";
+        char[] str = "①".toCharArray();
         System.out.println(str);
     }
 }

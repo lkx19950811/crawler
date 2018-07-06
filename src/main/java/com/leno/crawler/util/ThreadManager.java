@@ -13,6 +13,8 @@ import java.util.concurrent.Future;
 
 /**
  * 线程池工具类,使用单例模式,线程安全
+ *
+ * create by leon 2018-07-04
  */
 public class ThreadManager {
     static private Logger logger = LoggerFactory.getLogger(ThreadManager.class);

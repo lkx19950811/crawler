@@ -62,7 +62,7 @@ public class Movie {
     /**
      * 豆瓣评分
      */
-    @Column(name = "ratingNum")
+    @Column(name = "ratingNum",length = 200)
     private String ratingNum;
     /**
      * 标签
