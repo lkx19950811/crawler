@@ -1,5 +1,6 @@
 package com.leno.crawler.service;
 
+import com.leno.crawler.common.BaseService;
 import com.leno.crawler.common.Constants;
 import com.leno.crawler.entity.Record;
 import com.leno.crawler.repository.RecordRepository;
@@ -26,7 +27,7 @@ import java.util.regex.Pattern;
  * @desc 解析额外链接
  */
 @Service
-public class RecordService {
+public class RecordService extends BaseService<Record> {
     Logger logger = LoggerFactory.getLogger(RecordService.class);
     @Autowired
     RecordRepository recordRepository;

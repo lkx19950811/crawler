@@ -1,5 +1,6 @@
 package com.leno.crawler.service;
 
+import com.leno.crawler.common.BaseService;
 import com.leno.crawler.entity.Proxy;
 import com.leno.crawler.repository.ProxyRepository;
 import com.leno.crawler.util.HttpUtils;
@@ -36,7 +37,7 @@ import java.util.stream.Stream;
  * @desc
  */
 @Service
-public class ProxyService {
+public class ProxyService extends BaseService<Proxy> {
     private static final Logger logger = LoggerFactory.getLogger(ProxyService.class);
     @Autowired
     ProxyRepository proxyRepository;

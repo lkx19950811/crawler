@@ -1,5 +1,6 @@
 package com.leno.crawler.service;
 
+import com.leno.crawler.common.BaseService;
 import com.leno.crawler.common.Constants;
 import com.leno.crawler.entity.Movie;
 import com.leno.crawler.repository.MovieRepository;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
  * @desc 解析Movie
  */
 @Service
-public class MovieService {
+public class MovieService extends BaseService<Movie> {
     Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     MovieRepository movieRepository;

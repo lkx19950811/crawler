@@ -1,5 +1,6 @@
 package com.leno.crawler.service;
 
+import com.leno.crawler.common.BaseService;
 import com.leno.crawler.common.Constants;
 import com.leno.crawler.entity.Comments;
 import com.leno.crawler.repository.CommentRepository;
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
  * @desc 解析短评
  */
 @Service
-public class CommentService {
+public class CommentService extends BaseService<Comments> {
     Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     CommentRepository commentRepository;
