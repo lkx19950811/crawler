@@ -12,13 +12,18 @@ import org.htmlparser.util.NodeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 
 
 /**
@@ -38,6 +43,7 @@ public class RecordService extends BaseService<Record> {
      * 从返回的html中解析链接
      * @param content 传入返回的html
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)//碰到问题全部回滚
     public void parseUrl(String content)  {
         Long countNum = recordRepository.count();
         try {

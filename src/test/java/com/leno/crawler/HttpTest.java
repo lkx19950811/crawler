@@ -13,6 +13,10 @@ import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 
 import java.io.*;
+import java.lang.ref.SoftReference;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * 描述:
@@ -52,10 +56,29 @@ public class HttpTest  {
     public void test3(){
         String res = HttpUtils.get("https://www.baidu.com");
         System.out.println(res);
+        SoftReference<Object> softRef = new SoftReference<Object>(new Object());
+
     }
     @Test
     public void test4(){
-        char[] str = "①".toCharArray();
-        System.out.println(str);
+        Map map = new HashMap();
+        Map newmap = new HashMap();
+        map.put("str","1");
+        newmap.put("str","2");
+        map.put("a",newmap);
+        System.out.println(map);
+        newmap.put("b","c");
+        System.out.println(map);
+    }
+    @Test
+    public void test5(){
+        int a = new Random().nextInt(10);
+        if (a<6){
+            System.out.println("a<6");
+        }else if (a>6){
+            System.out.println("a>6");
+        }else {
+            System.out.println("a=6");
+        }
     }
 }
