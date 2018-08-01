@@ -63,18 +63,10 @@ public class CrawlerSchedule {
                 //可更改是否使用代理
                 final String page = isProt(url,proxyied);
                 if (StringUtils.isEmpty(page))continue;
-                Thread recordThread = new Thread(() -> {
-                    recordService.parseUrl(page);
-                });
-                Thread movieThread = new Thread(() -> {
-                    movieService.parseMovie(page,url);
-                });
-                Thread commentThread = new Thread(() -> {
-                    commentService.parseComment(page,url);
-                });
-                ThreadManager.getInstance().execute(recordThread);
-                ThreadManager.getInstance().execute(movieThread);
-                ThreadManager.getInstance().execute(commentThread);
+                Thread recordT = new Thread(()-> recordService.parseUrl(page));
+                Thread movieT = new Thread(()-> movieService.parseMovie(page,url));
+                Thread commentT = new Thread(()-> commentService.parseComment(page,url));
+                ThreadManager.getInstance().execute(recordT,movieT,commentT);
             }
             recordService.setRecordONE(url);//将爬取过的标记为1
         }
@@ -98,9 +90,10 @@ public class CrawlerSchedule {
     }
 
     /**
-     * 是否使用代理,可以在配置文件中配置
-     * @param url
-     * @param proxied
+     * 可以指定知否使用代理的解析方法,
+     * 可以在配置文件中配置
+     * @param url 解析的url
+     * @param proxied 是否使用代理
      * @return
      */
     public String isProt (String url,Boolean proxied) throws InterruptedException {

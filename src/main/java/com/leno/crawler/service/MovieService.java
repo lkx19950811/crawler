@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -34,6 +35,7 @@ public class MovieService extends BaseService<Movie> {
      * 开始初始化解析电影
      * @param content 请求到的页面
      */
+    @Async
     public void parseMovie(String content,String url){
         logger.info("========== Parse Movie:" + url);
         //parse movie detail page
@@ -49,6 +51,7 @@ public class MovieService extends BaseService<Movie> {
      *
      * @param doc 两个传入参数虽然内容不同
      */
+    @Async
     public void parseIt(Document doc){
         Movie movie = new Movie();
         if (doc.html().contains("导演") && doc.html().contains("主演") && doc.html().contains("类型") &&

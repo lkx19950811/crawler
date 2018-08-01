@@ -11,6 +11,8 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -34,6 +36,7 @@ public class CommentService extends BaseService<Comments> {
      * @param content
      * @param url
      */
+    @Async
     public void parseComment(String content,String url){
         logger.info("==========   Parse Comment:" + url);
         //parse comment page
@@ -49,6 +52,7 @@ public class CommentService extends BaseService<Comments> {
      * 解析过程
       * @param commentDoc
      */
+    @Async
     public void parse(Document commentDoc){
         if (commentDoc.getElementById("comments") != null) { // add to avoid exception like https://movie.douban.com/subject/25842478/comments
             Elements commentsElements = commentDoc.getElementById("comments").children();
@@ -73,8 +77,12 @@ public class CommentService extends BaseService<Comments> {
                     //TODO 有些评论里带表情,需要验证是否带emoji表情,我觉得最好是过滤,不然要改mysql,跟换血一样
                     Optional<Comments> optionalComments = Optional.ofNullable(commentRepository.findByCommentInfo(comments.getCommentInfo()));
                     if (!optionalComments.isPresent()){//如果该条评论不存在
-                        commentRepository.save(comments);
-                        logger.info(">>>>>>saving comment for " + comments.getCommentForMovie() + " by:" + comments.getCommentAuthor() + "<<<<<<");
+                        try {
+                            commentRepository.save(comments);
+                            logger.info(">>>>>>saving comment for " + comments.getCommentForMovie() + " by:" + comments.getCommentAuthor() + "<<<<<<");
+                        }catch (JpaSystemException e){
+                            logger.error("这玩意里面有emoji表情,所以导致出错了  {}",comments.toString());
+                        }
                     }
                 }
             }

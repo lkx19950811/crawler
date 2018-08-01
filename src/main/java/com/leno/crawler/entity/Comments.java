@@ -106,5 +106,16 @@ public class Comments {
         this.recordId = recordId;
     }
 
-
+    @Override
+    public String toString() {
+        return "Comments{" +
+                "commentId=" + commentId +
+                ", commentInfo='" + commentInfo + '\'' +
+                ", commentAuthor='" + commentAuthor + '\'' +
+                ", commentAuthorImgUrl='" + commentAuthorImgUrl + '\'' +
+                ", commentVote='" + commentVote + '\'' +
+                ", commentForMovie='" + commentForMovie + '\'' +
+                ", recordId='" + recordId + '\'' +
+                '}';
+    }
 }

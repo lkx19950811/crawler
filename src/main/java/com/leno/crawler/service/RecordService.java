@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +44,7 @@ public class RecordService extends BaseService<Record> {
      * 从返回的html中解析链接
      * @param content 传入返回的html
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)//碰到问题全部回滚
+    @Async
     public void parseUrl(String content)  {
         Long countNum = recordRepository.count();
         try {

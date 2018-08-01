@@ -70,6 +70,11 @@ public class ThreadManager {
             }
             mExecutor.execute(runnable);
         }
+        public void execute(Runnable... runas){
+            for (Runnable runnable : runas){
+                execute(runnable);
+            }
+        }
 
           public <T> Future<T> submit(Callable<T> task){
             if (task == null) {

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -137,6 +138,7 @@ public class ProxyService extends BaseService<Proxy> {
      * @param page 要抓第几页的代理
      * @throws ParseException
      */
+    @Async
     public void parseProxyUrl(String page) throws ParseException {
         logger.info(">>>>>>>>>>>>>> 开始抓取代理 <<<<<<<<<<<<<<<<");
         if (page.equals("1")){
