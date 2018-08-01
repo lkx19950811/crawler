@@ -18,9 +18,9 @@ import java.util.concurrent.Future;
  */
 public class ThreadManager {
     static private Logger logger = LoggerFactory.getLogger(ThreadManager.class);
-    public static ThreadPool instance;
-    private ThreadPoolExecutor longExecutor; // 耗时比较长的线程池   用来请求网络
-    private ThreadPoolExecutor shortExecutor; // 比较短的线程池    用来加载本地数据
+    private static ThreadPool instance;
+//    private ThreadPoolExecutor longExecutor; // 耗时比较长的线程池   用来请求网络
+//    private ThreadPoolExecutor shortExecutor; // 比较短的线程池    用来加载本地数据
 
     // 获取单例的线程池对象
     public static ThreadPool getInstance() {
@@ -49,7 +49,7 @@ public class ThreadManager {
             this.keepAliveTime = keepAliveTime;
         }
 
-        public void execute(Runnable runnable) {
+        void execute(Runnable runnable) {
             if (runnable == null) {
                 return;
             }

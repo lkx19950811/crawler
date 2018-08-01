@@ -8,8 +8,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -27,9 +25,13 @@ import java.util.regex.Pattern;
  */
 @Service
 public class MovieService extends BaseService<Movie> {
-    Logger logger = LoggerFactory.getLogger(this.getClass());
-    @Autowired
+    private final
     MovieRepository movieRepository;
+
+    @Autowired
+    public MovieService(MovieRepository movieRepository) {
+        this.movieRepository = movieRepository;
+    }
 
     /**
      * 开始初始化解析电影

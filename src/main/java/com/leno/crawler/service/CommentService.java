@@ -8,8 +8,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.scheduling.annotation.Async;
@@ -27,14 +25,17 @@ import java.util.regex.Pattern;
  */
 @Service
 public class CommentService extends BaseService<Comments> {
-    Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final CommentRepository commentRepository;
+
     @Autowired
-    CommentRepository commentRepository;
+    public CommentService(CommentRepository commentRepository) {
+        this.commentRepository = commentRepository;
+    }
 
     /**
      * 解析短评
-     * @param content
-     * @param url
+     * @param content 页面内容
+     * @param url 解析的地址
      */
     @Async
     public void parseComment(String content,String url){
@@ -50,7 +51,7 @@ public class CommentService extends BaseService<Comments> {
 
     /**
      * 解析过程
-      * @param commentDoc
+      * @param commentDoc 解析的文本
      */
     @Async
     public void parse(Document commentDoc){

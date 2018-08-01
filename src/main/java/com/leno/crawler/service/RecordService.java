@@ -9,23 +9,15 @@ import org.htmlparser.Parser;
 import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.springframework.transaction.annotation.Propagation.REQUIRED;
-
 
 /**
  * @author leon
@@ -34,11 +26,14 @@ import static org.springframework.transaction.annotation.Propagation.REQUIRED;
  */
 @Service
 public class RecordService extends BaseService<Record> {
-    Logger logger = LoggerFactory.getLogger(RecordService.class);
-    @Autowired
-    RecordRepository recordRepository;
+    private final RecordRepository recordRepository;
     @Value("${maxLinkNum}")
     Long maxCycle;//爬取的链接最大数量
+
+    @Autowired
+    public RecordService(RecordRepository recordRepository) {
+        this.recordRepository = recordRepository;
+    }
 
     /**
      * 从返回的html中解析链接
@@ -68,14 +63,15 @@ public class RecordService extends BaseService<Record> {
                 logger.info(">>>>>>>>>>>>>存入{}条链接<<<<<<<<<<<<<",nextLinkList.size());
             }
         }catch (Exception e){
+            logger.error("错误信息{}",e.getMessage());
         }
 
     }
 
     /**
      * 初始化爬取链接
-     * @param seed
-     * @param urls
+     * @param seed 种子,初始地址
+     * @param urls 链接合集
      */
     public void initURLDouban(String seed, List<String> urls){
         List<Record> records = recordRepository.findByUrl(seed);
@@ -97,17 +93,17 @@ public class RecordService extends BaseService<Record> {
 
     /**
      * 将爬过的链接置为1
-     * @param url
+     * @param url 爬过的url地址
      */
     public void setRecordONE(String url){
         recordRepository.setRecordONE(url);
     }
     /**
      * 解析单个节点
-     * @param nextLinkList
-     * @param node
+     * @param nextLinkList urllist,用来存放拿到的url
+     * @param node url节点们
      */
-    public void parseLink(List<String> nextLinkList,Node node){
+    private void parseLink(List<String> nextLinkList, Node node){
         if (node instanceof LinkTag){
             LinkTag link = (LinkTag) node;
             String nextLink = link.extractLink();
@@ -139,7 +135,6 @@ public class RecordService extends BaseService<Record> {
                             recordRepository.deleteAll(list);
                         }
                     }
-
                 }
             }
         }

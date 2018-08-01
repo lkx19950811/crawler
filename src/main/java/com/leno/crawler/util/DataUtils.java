@@ -1,9 +1,7 @@
 package com.leno.crawler.util;
 
-import org.jsoup.helper.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 
@@ -14,57 +12,53 @@ import java.io.UnsupportedEncodingException;
  * @author Leo
  * @create 2018-06-23 下午 2:30
  */
-public class DataUtils {
+class DataUtils {
     private final static Logger logger = LoggerFactory.getLogger(DataUtils.class);
 
     /**
      * 获取字符集
-     * @param str
-     * @return
+     * @param str 要获取字符集的字符串
+     * @return 返回字符集类型
      */
-    public static String getEncoding(String str) {
+    private static String getEncoding(String str) {
         String encode = "GB2312";
         try {
             if (str.equals(new String(str.getBytes(encode), encode))) {      //判断是不是GB2312
-                String s = encode;
-                return s;      //是的话，返回“GB2312“，以下代码同理
+                return encode;      //是的话，返回“GB2312“，以下代码同理
             }
-        } catch (Exception exception) {
+        } catch (Exception ignored) {
         }
         encode = "ISO-8859-1";
         try {
             if (str.equals(new String(str.getBytes(encode), encode))) {      //判断是不是ISO-8859-1
-                String s1 = encode;
-                return s1;
+                return encode;
             }
-        } catch (Exception exception1) {
+        } catch (Exception ignored) {
         }
         encode = "UTF-8";
         try {
             if (str.equals(new String(str.getBytes(encode), encode))) {   //判断是不是UTF-8
-                String s2 = encode;
-                return s2;
+                return encode;
             }
-        } catch (Exception exception2) {
+        } catch (Exception ignored) {
         }
         encode = "GBK";
         try {
             if (str.equals(new String(str.getBytes(encode), encode))) {      //判断是不是GBK
-                String s3 = encode;
-                return s3;
+                return encode;
             }
-        } catch (Exception exception3) {
+        } catch (Exception ignored) {
         }
         return "";        //如果都不是，说明输入的内容不属于常见的编码格式。
     }
 
     /**
      * 字符转码
-     * @param str
-     * @param charset
-     * @return
+     * @param str 需要转码的字符串
+     * @param charset 转码的字符集类型
+     * @return 转换完毕的字符串
      */
-    public static String transcoding(String str,String charset){
+    static String transcoding(String str, String charset){
         try {
             String encoding = getEncoding(str);
             if (encoding.equalsIgnoreCase("gb2312")){

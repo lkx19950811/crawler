@@ -21,9 +21,8 @@ import java.util.concurrent.ExecutionException;
  */
 @Component
 public class ProxySchedule {
-    Logger logger = LoggerFactory.getLogger(this.getClass());
-    @Autowired
-    ProxyService proxyService;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final ProxyService proxyService;
     @Value("${proxyPage}")
     Integer proxyPage;
     @Value("${getProxy}")
@@ -31,10 +30,16 @@ public class ProxySchedule {
     private static String page = "0";
     @Value("${verifyProxy}")
     Boolean isverifyProxy;
+
+    @Autowired
+    public ProxySchedule(ProxyService proxyService) {
+        this.proxyService = proxyService;
+    }
+
     /**
      * 从免费代理网站抓取地址
-     * @throws ParseException
-     * @throws InterruptedException
+     * @throws ParseException 页面解析异常
+     * @throws InterruptedException 中断异常,因为使用了Thread.sleep
      */
     @Scheduled(initialDelay = 0, fixedDelay = 1000L * 60L * 15L)//启动延迟0,间隔15分钟
 //    @Scheduled(initialDelay = 0, fixedDelay = 5000)//5秒
@@ -42,8 +47,8 @@ public class ProxySchedule {
         if (isgetProxy){
             friendlyToDouban();
             Integer p = Integer.valueOf(page);
-            if (p>=proxyPage)this.page="0";
-            this.page = (p + 1 ) + "";
+            if (p>=proxyPage)page="0";
+            page = (p + 1 ) + "";
             proxyService.parseProxyUrl(page);
         }else {
             logger.info("自动抓取代理未开启");
@@ -55,7 +60,7 @@ public class ProxySchedule {
      * @throws InterruptedException
      */
     @Scheduled(initialDelay = 1000 * 45, fixedDelay = 1000L * 60L * 5L)//启动延迟45秒,验证间隔5分钟
-    public void verifyProxy() throws InterruptedException, ParseException, ExecutionException {
+    public void verifyProxy() throws InterruptedException, ExecutionException {
         if (isverifyProxy){
             proxyService.verifyProxy();
         }else {

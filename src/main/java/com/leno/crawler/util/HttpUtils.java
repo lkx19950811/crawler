@@ -1,6 +1,5 @@
 package com.leno.crawler.util;
 
-import com.leno.crawler.entity.Proxy;
 import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpRequestRetryHandler;
@@ -11,7 +10,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
@@ -36,9 +34,6 @@ import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Date;
 
 /**
  * @author leon
@@ -47,18 +42,15 @@ import java.util.Date;
  */
 @Configuration
 public class HttpUtils {
-    static Logger logger = LoggerFactory.getLogger(HttpUtils.class);
-    static private HttpRequestRetryHandler myRetryHandler = (exception, executionCount, context) -> false;
-
+    private static Logger logger = LoggerFactory.getLogger(HttpUtils.class);
     private static CloseableHttpClient prrlhttpClient = null;
     private final static Object syncLock = new Object();
     /**
      * 设置代理get请求
      *
-     * @param url
-     * @param proxy
-     * @return
-     * @throws Exception
+     * @param url 请求地址
+     * @param proxy 代理对象
+     * @return 请求结果
      */
     public static String proxyGet(String url, HttpHost proxy) {
         //设置代理IP、端口、协议
@@ -77,7 +69,7 @@ public class HttpUtils {
         try {
             ResponseHandler<String> responseHandler = getResponseHandler();
             response = httpClient.execute(httpGet, responseHandler);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         } finally {
             try {
                 httpGet.releaseConnection();
@@ -95,7 +87,6 @@ public class HttpUtils {
      *
      * @param url 请求地址
      * @return String 类型的html或者数据
-     * @throws IOException
      */
     public static String get(String url) {
         CloseableHttpClient httpClient = HttpClients.createDefault();//创建默认httpclient
@@ -118,10 +109,9 @@ public class HttpUtils {
     /**
      * 设置代理get请求
      *
-     * @param url
-     * @param proxy
-     * @return
-     * @throws Exception
+     * @param url 请求地址
+     * @param proxy 代理对象
+     * @return 请求结果
      */
     public static String proxyGetHttps(String url, HttpHost proxy) {
         //设置代理IP、端口、协议
@@ -152,27 +142,26 @@ public class HttpUtils {
      * @return 自定义responseHandler
      */
     private static ResponseHandler<String> getResponseHandler() {
-        ResponseHandler<String> responseHandler = httpResponse -> {
+        return httpResponse -> {
             int status = httpResponse.getStatusLine().getStatusCode();
             logger.info("------------status:" + status);
             if (status >= 200 && status < 300) {            //抛弃异常状态请求
                 HttpEntity entity = httpResponse.getEntity();
                 return entity != null ? EntityUtils.toString(entity) : null;
             } else if (status == 300 || status == 301 || status == 302 || status == 304 || status == 400 ||
-                    status == 401 || status == 403 || status == 404 || new String(status + "").startsWith("5")) { //refer to link http://blog.csdn.net/u012043391/article/details/51069441
+                    status == 401 || status == 403 || status == 404 || (status + "").startsWith("5")) { //refer to link http://blog.csdn.net/u012043391/article/details/51069441
                 if (status==404)return "404";//404页面不存在,添加标志
                 return null;//其他则是请求错误,被策略组拒绝,稍后继续请求
             } else {
                 throw new ClientProtocolException("Unexpected response status: " + status);
             }
         };
-        return responseHandler;
     }
 
     /**
      * 设置模拟请求头
      *
-     * @param url
+     * @param url 请求地址
      * @return 返回httpget
      */
     private static HttpGet setHeader(String url) {
@@ -187,23 +176,15 @@ public class HttpUtils {
 
     /**
      * 创建https连接
-     * @return
+     * @return 返回httpclient对象
      */
     public static CloseableHttpClient createSSLClientDefault() {
         try {
-            SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
-                //信任所有
-                public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                    return true;
-                }
-            }).build();
+            //信任所有
+            SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (TrustStrategy) (chain, authType) -> true).build();
             SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext);
             return HttpClients.custom().setSSLSocketFactory(sslsf).build();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
+        } catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return HttpClients.createDefault();
@@ -211,7 +192,7 @@ public class HttpUtils {
     /**
      * 获取HttpClient对象(使用连接池,不然会造成堵塞)
      *
-     * @return
+     * @return 返回httpclient对象
      * @author SHANHY
      * @create 2015年12月18日
      */
@@ -239,7 +220,7 @@ public class HttpUtils {
     /**
      * 创建HttpClient对象
      *
-     * @return
+     * @return 返回httpclient对象
      * @author SHANHY
      * @create 2015年12月18日
      */
@@ -279,9 +260,6 @@ public class HttpUtils {
             if (exception instanceof UnknownHostException) {// 目标服务器不可达
                 return false;
             }
-            if (exception instanceof ConnectTimeoutException) {// 连接被拒绝
-                return false;
-            }
             if (exception instanceof SSLException) {// SSL握手异常
                 return false;
             }
@@ -290,19 +268,15 @@ public class HttpUtils {
                     .adapt(context);
             HttpRequest request = clientContext.getRequest();
             // 如果请求是幂等的，就再次尝试
-            if (!(request instanceof HttpEntityEnclosingRequest)) {
-                return true;
-            }
-            return false;
+            return !(request instanceof HttpEntityEnclosingRequest);
         };
-        CloseableHttpClient httpClient = HttpClients.custom()
+
+        return HttpClients.custom()
                 .setConnectionManager(cm)
                 .setRetryHandler(httpRequestRetryHandler).build();
-
-        return httpClient;
     }
 
-    public static void main(String[] args) throws ClientProtocolException, IOException {
+    public static void main(String[] args) throws IOException {
         CloseableHttpClient hp = createSSLClientDefault();
         HttpGet hg = new HttpGet("https://news.cnblogs.com/");
         CloseableHttpResponse response = hp.execute(hg);
@@ -311,14 +285,6 @@ public class HttpUtils {
         System.out.println(content);
         hp.close();
 
-    }
-    /**
-     * proxy 转换 Httphost
-     * @param proxy
-     * @return
-     */
-    private static HttpHost proxyToHttphost(Proxy proxy){
-        return new HttpHost(proxy.getIp(),proxy.getPort(),proxy.getType());
     }
 
 }

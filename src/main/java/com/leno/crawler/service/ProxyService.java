@@ -18,7 +18,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.sound.sampled.Port;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,15 +39,20 @@ import java.util.stream.Stream;
 @Service
 public class ProxyService extends BaseService<Proxy> {
     private static final Logger logger = LoggerFactory.getLogger(ProxyService.class);
-    @Autowired
-    ProxyRepository proxyRepository;
+    private final ProxyRepository proxyRepository;
     @Value("${proxyURL}")
     String proxyURL;
     @Value("${vipUrl}")
     String vipUrl;
+
+    @Autowired
+    public ProxyService(ProxyRepository proxyRepository) {
+        this.proxyRepository = proxyRepository;
+    }
+
     /**@deprecated
      * 随机获得代理地址(弃用)
-     * @return
+     * @return 返回代理
      */
     public Proxy getProxyHost(){
         Random random = new Random();
@@ -56,15 +60,14 @@ public class ProxyService extends BaseService<Proxy> {
         /*
             随机选用代理地址
          */
-        Proxy proxy = proxies.get(random.nextInt(proxies.size()));
         // HttpHost proxy = new HttpHost("你的代理的IP", 8080, "http");
-        return proxy;
+        return proxies.get(random.nextInt(proxies.size()));
     }
 
     /**
      * 选择最近成功的地址
      * @param proxy 上一次使用的地址
-     * @return
+     * @return 代理
      */
     public Proxy getBestProxyHost(Proxy proxy){
         if (proxy.getIp()==null){//上一次没有成功记录,则搜出全部ip
@@ -88,7 +91,7 @@ public class ProxyService extends BaseService<Proxy> {
     /**
      * 代理失败对Proxy进行失败记录
      *
-     * @param proxy
+     * @param proxy 代理对象
      */
     public void failProxy(Proxy proxy){
         if (proxy.getTryNum()>3){
@@ -103,7 +106,7 @@ public class ProxyService extends BaseService<Proxy> {
     /**
      * 验证可用Proxy
      */
-    public void verifyProxy() throws InterruptedException, ParseException, ExecutionException {
+    public void verifyProxy() throws InterruptedException, ExecutionException {
         logger.info(">>>>>>>>>>>>>> 开始验证代理状态 <<<<<<<<<<<<<");
         List<Proxy> proxies = proxyRepository.findAll();
 //        if (proxies.size()<10){//如果库里的代理数量小于10,则再去抓
@@ -111,7 +114,7 @@ public class ProxyService extends BaseService<Proxy> {
 //        }
         for (Proxy proxy:proxies){
             HttpHost host = new HttpHost(proxy.getIp(),proxy.getPort(),proxy.getType());
-            Callable<String> callable = () -> {return HttpUtils.proxyGet("https://www.douban.com",host); };
+            Callable<String> callable = () -> HttpUtils.proxyGet("https://www.douban.com",host);
             String res = ThreadManager.getInstance().submit(callable).get();//开始验证代理地址
             if (!StringUtils.isEmpty(res)){
                 proxy.setStatus("可用");
@@ -136,7 +139,7 @@ public class ProxyService extends BaseService<Proxy> {
     /**
      * 解析代理
      * @param page 要抓第几页的代理
-     * @throws ParseException
+     * @throws ParseException 解析页面错误
      */
     @Async
     public void parseProxyUrl(String page) throws ParseException {
@@ -151,9 +154,8 @@ public class ProxyService extends BaseService<Proxy> {
             Elements trs = elements.get(0).children();
             for (Element tr : trs){
                 Proxy proxy = new Proxy();
-                if (tr.toString().contains("国家")){//说明不是ip列表
-                    continue;
-                }else {
+                if (!tr.toString().contains("国家"))//说明不是ip列表
+                {
                     String secReg = ".*(\\d+\\.\\d+).*";//匹配 title= 0.12秒中的秒数
                     Pattern r = Pattern.compile(secReg);
                     Matcher m = r.matcher(tr.children().get(6).toString());//存在tr节点中的第7个节点
@@ -205,12 +207,5 @@ public class ProxyService extends BaseService<Proxy> {
         List<Proxy> proxies =  Stream.of(ips).map(Proxy::new).collect(Collectors.toList());
         proxyRepository.saveAll(proxies);
         logger.info("存入{}条",proxies.size());
-    }
-    /**
-     * 随机停止1到10秒
-     * @throws InterruptedException
-     */
-    private static void friendlyToDouban() throws InterruptedException {
-        Thread.sleep((new Random().nextInt(10) + 1)*1000);//sleep for the random second so that avoiding to be listed into blacklist
     }
 }

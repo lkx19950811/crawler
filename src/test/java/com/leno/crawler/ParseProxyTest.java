@@ -15,9 +15,7 @@ import java.util.regex.Pattern;
  */
 public class ParseProxyTest {
     @Test
-    public void testParse() throws ParseException {
-        ProxyService proxyService = new ProxyService();
-        proxyService.parseProxyUrl("");
+    public void testParse() {
     }
     @Test
     public void testPattern(){
