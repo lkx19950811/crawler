@@ -47,7 +47,7 @@ public class ProxySchedule {
         if (isgetProxy){
             friendlyToDouban();
             Integer p = Integer.valueOf(page);
-            if (p>=proxyPage)page="0";
+            if (p>=proxyPage)page="0";//如果超过了要抓取的页数,则从第一页开始
             page = (p + 1 ) + "";
             proxyService.parseProxyUrl(page);
         }else {
