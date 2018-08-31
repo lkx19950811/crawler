@@ -1,6 +1,6 @@
 package com.leno.crawler.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.leno.crawler.util.DataUtils;
 
 import javax.persistence.*;
 
@@ -59,19 +59,19 @@ public class Comments {
     }
 
     public String getCommentInfo() {
-        return commentInfo;
+        return DataUtils.emojiDecode(commentInfo);
     }
 
     public void setCommentInfo(String commentInfo) {
-        this.commentInfo = commentInfo;
+        this.commentInfo = DataUtils.emojiEncode(commentInfo);
     }
 
     public String getCommentAuthor() {
-        return commentAuthor;
+        return DataUtils.emojiDecode(commentAuthor);
     }
 
     public void setCommentAuthor(String commentAuthor) {
-        this.commentAuthor = commentAuthor;
+        this.commentAuthor = DataUtils.emojiEncode(commentAuthor);
     }
 
     public String getCommentAuthorImgUrl() {
@@ -108,7 +108,7 @@ public class Comments {
 
     @Override
     public String toString() {
-        return "Comments{" +
+        String str = "Comments{" +
                 "commentId=" + commentId +
                 ", commentInfo='" + commentInfo + '\'' +
                 ", commentAuthor='" + commentAuthor + '\'' +
@@ -117,5 +117,6 @@ public class Comments {
                 ", commentForMovie='" + commentForMovie + '\'' +
                 ", recordId='" + recordId + '\'' +
                 '}';
+        return DataUtils.emojiDecode(str);
     }
 }

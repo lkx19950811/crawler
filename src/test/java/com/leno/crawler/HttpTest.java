@@ -1,6 +1,7 @@
 package com.leno.crawler;
 
 import com.leno.crawler.util.HttpUtils;
+import com.leno.crawler.util.MessageUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
@@ -14,9 +15,8 @@ import org.junit.Test;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 描述:
@@ -80,5 +80,42 @@ public class HttpTest  {
         }else {
             System.out.println("a=6");
         }
+    }
+    @Test
+    public void https(){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYYMMDDhhmmss");
+        String merId = "875070200000059";
+        String orderId = "02546364928236724233";//我们商户的订单
+        String txnType = "01";
+        String txnSubType = "00";
+        String bizType = "000000";
+        String txnTime = simpleDateFormat.format(new Date());
+        String queryId = "231808071622422400028";//ecommerce那边的定单号 也就是trace number
+        TreeMap treeMap = new TreeMap();
+        treeMap.put("merId",merId);
+        treeMap.put("orderId",orderId);
+        treeMap.put("txnType",txnType);
+        treeMap.put("txnSubType",txnSubType);
+        treeMap.put("bizType",bizType);
+        treeMap.put("txnTime",txnTime);
+        treeMap.put("queryId",queryId);
+        String signature = sign(treeMap,"r7gH5QvxXnEdGHF");
+        String signMethod = "SHA";
+        treeMap.put("signature",signature);
+        treeMap.put("signMethod",signMethod);
+        String res = HttpUtils.post("https://sit.sinopayonline.com/UGateWay/backTransReq",treeMap);
+        System.out.println(res);
+    }
+    /**
+     * 签名
+     * @param map 参数map
+     * @param key 秘钥
+     * @return 签名结果
+     */
+    private static String sign(TreeMap map,String key){
+        StringBuffer sb = new StringBuffer();
+        map.forEach((k,v)-> sb.append(k + "=").append(v).append("&"));
+        sb.append(MessageUtils.sha256(key));
+        return MessageUtils.sha256(sb.toString());
     }
 }

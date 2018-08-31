@@ -1,5 +1,6 @@
 package com.leno.crawler.util;
 
+import com.github.binarywang.java.emoji.EmojiConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,8 +13,9 @@ import java.io.UnsupportedEncodingException;
  * @author Leo
  * @create 2018-06-23 下午 2:30
  */
-class DataUtils {
+public class DataUtils {
     private final static Logger logger = LoggerFactory.getLogger(DataUtils.class);
+    private static EmojiConverter emojiConverter = EmojiConverter.getInstance();
 
     /**
      * 获取字符集
@@ -69,6 +71,24 @@ class DataUtils {
             logger.info("转码失败");
         }
         return str;
+    }
+    /**
+     * 将emojiStr 转码
+     * 正常字符不受牵连
+     * @param emojiStr
+     * @return
+     */
+    public static String emojiEncode(String emojiStr){
+        return emojiConverter.toAlias(emojiStr);
+    }
+
+    /**
+     * 带有表情的字符串解码
+     * @param str
+     * @return
+     */
+    public static String emojiDecode(String str){
+        return emojiConverter.toUnicode(str);
     }
 
 }

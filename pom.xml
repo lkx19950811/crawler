@@ -104,6 +104,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-test</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>java-emoji-converter</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <!--   需要打包的时候打开,平时注释掉  -->
         <!--<dependency>-->
             <!--<groupId>org.springframework.boot</groupId>-->

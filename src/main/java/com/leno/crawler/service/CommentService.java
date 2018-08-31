@@ -4,6 +4,7 @@ import com.leno.crawler.common.BaseService;
 import com.leno.crawler.common.Constants;
 import com.leno.crawler.entity.Comments;
 import com.leno.crawler.repository.CommentRepository;
+import com.leno.crawler.util.DataUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -75,8 +76,10 @@ public class CommentService extends BaseService<Comments> {
                     comments.setCommentAuthorImgUrl(comment.getElementsByAttribute("href").get(2).attr("href"));
 
                     //save comment record
-                    //TODO 有些评论里带表情,需要验证是否带emoji表情,我觉得最好是过滤,不然要改mysql,跟换血一样
-                    Optional<Comments> optionalComments = Optional.ofNullable(commentRepository.findByCommentInfo(comments.getCommentInfo()));
+                    //由于评论存在表情 存入表情的是转码后,所以与数据库对比 需要encode
+                    Optional<Comments> optionalComments = Optional.ofNullable(
+                            commentRepository.findByCommentInfo(DataUtils.emojiEncode(comments.getCommentInfo())
+                            ));
                     if (!optionalComments.isPresent()){//如果该条评论不存在
                         try {
                             commentRepository.save(comments);

@@ -5,8 +5,10 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -19,6 +21,7 @@ import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -30,10 +33,14 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author leon
@@ -105,6 +112,34 @@ public class HttpUtils {
             }
         }
         return DataUtils.transcoding(response, "UTF-8");
+    }
+
+    /**
+     * post方法
+     * @param url
+     * @param params
+     * @return
+     */
+    public static String post(String url, Map<String,String> params){
+        //设置代理IP、端口、协议
+        //实例化CloseableHttpClient对象
+        CloseableHttpClient httpClient = getHttpClient(url);
+        HttpPost httpPost = new HttpPost(url);
+        String response = "";
+        try {
+            setParams(httpPost,params);
+            ResponseHandler<String> responseHandler = getResponseHandler();
+            response = httpClient.execute(httpPost, responseHandler);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return DataUtils.transcoding(response, "utf-8");
+        }
     }
     /**
      * 设置代理get请求
@@ -263,14 +298,12 @@ public class HttpUtils {
             if (exception instanceof SSLException) {// SSL握手异常
                 return false;
             }
-
             HttpClientContext clientContext = HttpClientContext
                     .adapt(context);
             HttpRequest request = clientContext.getRequest();
             // 如果请求是幂等的，就再次尝试
             return !(request instanceof HttpEntityEnclosingRequest);
         };
-
         return HttpClients.custom()
                 .setConnectionManager(cm)
                 .setRetryHandler(httpRequestRetryHandler).build();
@@ -286,5 +319,22 @@ public class HttpUtils {
         hp.close();
 
     }
-
+    /**
+     * 为post设置参数
+     * @param post httppost对象
+     * @param params 请求参数
+     */
+    public static void setParams(HttpPost post,Map<String,String> params){
+        if (params != null) {//添加参数
+            List<NameValuePair> nvps = new ArrayList<>();
+            for (Map.Entry<String, String> entity : params.entrySet()) {
+                nvps.add(new BasicNameValuePair(entity.getKey(), entity.getValue()));
+            }
+            try {
+                post.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
