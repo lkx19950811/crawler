@@ -54,10 +54,8 @@ public class HttpTest  {
     }
     @Test
     public void test3(){
-        String res = HttpUtils.get("https://www.baidu.com");
+        String res = HttpUtils.get("https://movie.douban.com");
         System.out.println(res);
-        SoftReference<Object> softRef = new SoftReference<Object>(new Object());
-
     }
     @Test
     public void test4(){

@@ -49,6 +49,7 @@ import java.util.Map;
  */
 @Configuration
 public class HttpUtils {
+    private final static String cookie = "ll=\"118172\"; bid=1lF6m_SDs4M; __utmc=30149280; __utmc=223695111; __yadk_uid=8m9REAOy9bhnKCtAETjNJGWcE9sNiLjh; _vwo_uuid_v2=DD45C53267166E72ADC99933B5541F949|f6c4884a330a9c87e41b55c97b0d9d86; viewed=\"27073387\"; gr_user_id=c482e9c6-bcb0-4f4e-8663-c17311abfbf6; __utmv=30149280.17214; douban-fav-remind=1; ps=y; __utmz=30149280.1535952481.50.33.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; __utmz=223695111.1535958788.30.18.utmcsr=douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; _ga=GA1.2.1388735101.1527214209; _gid=GA1.2.100509127.1535959101; push_noty_num=0; push_doumail_num=0; ap_v=1,6.0; _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1535966213%2C%22https%3A%2F%2Fwww.douban.com%2F%22%5D; _pk_ses.100001.4cf6=*; __utma=30149280.1388735101.1527214209.1535958787.1535966216.52; __utma=223695111.1131618684.1527214209.1535958788.1535966216.31; __utmb=223695111.0.10.1535966216; __utmt=1; __utmb=30149280.2.9.1535966373293; dbcl2=\"172146532:oYRQmj9t3vw\"; ck=PRH7; _pk_id.100001.4cf6=cd7b5a58b38e962f.1527214209.34.1535966406.1535959779.";
     private static Logger logger = LoggerFactory.getLogger(HttpUtils.class);
     private static CloseableHttpClient prrlhttpClient = null;
     private final static Object syncLock = new Object();
@@ -206,6 +207,7 @@ public class HttpUtils {
         httpGet.addHeader("Accept-Encoding", "gzip");
         httpGet.addHeader("Accept-Language", "zh-CN,zh");
         httpGet.addHeader("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.160 Safari/537.22");
+        httpGet.addHeader("Cookie",cookie);
         return httpGet;
     }
 

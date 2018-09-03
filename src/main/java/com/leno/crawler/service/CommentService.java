@@ -60,7 +60,7 @@ public class CommentService extends BaseService<Comments> {
             Elements commentsElements = commentDoc.getElementById("comments").children();
             for (Element comment : commentsElements) {
                 Comments comments = new Comments();
-                if (comment.getElementsByClass("fold-bd").size() < 1 && comment.children().get(1).getElementsByTag("p").size() > 0) {
+                if (comment.getElementsByClass("fold-bd").size() < 1 && comment.children().size()>0 &&comment.children().get(1).getElementsByTag("p").size() > 0) {
                     // to make sure the current item is the comment item rather than other info item      &&      检测fold-bd是查看是否有折叠，如果是折叠的评论则有fold-bd，折叠评论是指账号有异常的
                     String[] movies = commentDoc.getElementsByTag("h1").text().replace(" ", "").split("短评");
                     String commentForMovie = null;

@@ -58,15 +58,15 @@ public class CrawlerSchedule {
          */
         recordService.initURLDouban(seed,urls);
         for (String url : urls){
-            friendlyToDouban();//先停几秒
-            if (url.indexOf("mupload")<0){
+//            friendlyToDouban();//先停几秒
+            if (!url.contains("mupload")){
                 //可更改是否使用代理
                 final String page = isProt(url,proxyied);
                 if (StringUtils.isEmpty(page))continue;
                 Thread recordT = new Thread(()-> recordService.parseUrl(page));
                 Thread movieT = new Thread(()-> movieService.parseMovie(page,url));
                 Thread commentT = new Thread(()-> commentService.parseComment(page,url));
-                ThreadManager.getInstance().execute(recordT,movieT,commentT);
+                executor.execute(recordT,movieT,commentT);
             }
             recordService.setRecordONE(url);//将爬取过的标记为1
         }
@@ -77,7 +77,7 @@ public class CrawlerSchedule {
      * @throws InterruptedException
      */
     private static void friendlyToDouban() throws InterruptedException {
-        Thread.sleep((new Random().nextInt(10) + 1)*1000);//sleep for the random second so that avoiding to be listed into blacklist
+        Thread.sleep((new Random().nextInt(1) + 1)*1000);//sleep for the random second so that avoiding to be listed into blacklist
     }
 
     /**
@@ -90,7 +90,7 @@ public class CrawlerSchedule {
     }
 
     /**
-     * 可以指定知否使用代理的解析方法,
+     * 可以指定是否使用代理的解析方法,
      * 可以在配置文件中配置
      * @param url 解析的url
      * @param proxied 是否使用代理
