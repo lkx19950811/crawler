@@ -85,7 +85,7 @@ public class CommentService extends BaseService<Comments> {
                             commentRepository.save(comments);
                             logger.info(">>>>>>saving comment for " + comments.getCommentForMovie() + " by:" + comments.getCommentAuthor() + "<<<<<<");
                         }catch (JpaSystemException e){
-                            logger.error("这玩意里面有emoji表情,所以导致出错了  {}",comments.toString());
+                            logger.error("这玩意里面有不认识的emoji表情,所以导致出错了  {}",comments.toString());
                         }
                     }
                 }
